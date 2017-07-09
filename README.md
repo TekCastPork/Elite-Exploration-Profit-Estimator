@@ -1,6 +1,6 @@
 # TekCastPork's Elite: Dangerous Exploration Data Profit Estimator
 
-##What is this?
+## What is this?
 
 This is a program I am working on that attempts to help Elite: Dangerous pilots determine their profits from exploration data.
 
