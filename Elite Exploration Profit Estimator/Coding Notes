@@ -1,0 +1,4 @@
+Notes:
+
+Info window code:
+JOptionPane.showMessageDialog(null, "Text", "Title", JOptionPane.INFORMATION_MESSAGE);

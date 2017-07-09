@@ -1,1 +1,9 @@
 Processed Classification Types:
+
+Processed --
+Un-processed
+
+	String bodyClasses --
+	String fuelStars[] --
+	String dwarfStars[] --
+	String protoStars[] --
