@@ -7,3 +7,9 @@ Un-processed
 	String fuelStars[] --
 	String dwarfStars[] --
 	String protoStars[] --
+	String wolfRayetStars[] --
+	String carbonStars[] --
+	String miscStars[] --
+	String whiteDwarfStars[] --
+	String specialStars[] --
+	String superGiantStars[]

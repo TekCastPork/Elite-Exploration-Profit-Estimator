@@ -1,9 +1,11 @@
 import java.io.File;
+import java.io.PrintWriter;
 import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Locale;
-
 import processing.core.*;
+import javax.swing.JOptionPane; // will be eventually used for error handling and crash stuff
+import java.lang.management.*;
 
 
 
@@ -13,6 +15,7 @@ public class Scanner extends PApplet{
 	String filepath = "";
 	String inputLine = "";
 	String previousLine = "";
+	String scannedBodyDetails[] = {"","","",""}; // Name,Type,Terraformable?,Value
 
 	//All of the planetary body classes
 
@@ -27,7 +30,7 @@ public class Scanner extends PApplet{
 	String miscStars[] = {"MS","S","X"};
 	String whiteDwarfStars[] = {"D","DA","DAB","DAO","DAZ","DAV","DB","DBZ","DBV","DO","DOV","DQ","DC","DCV","DX"};
 	String specialStars[] = {"N","H"};
-	String SuperGiantStars[] = {"A_BlueWhiteSuperGiant","F_WhiteSuperGiant","M_RedSuperGiant","M_RedGiant","K_OrangeGiant","RoguePlanet","Nebula","StellarRemnantNebula","SuperMassiveBlackHole"};
+	String superGiantStars[] = {"A_BlueWhiteSuperGiant","F_WhiteSuperGiant","M_RedSuperGiant","M_RedGiant","K_OrangeGiant","RoguePlanet","Nebula","StellarRemnantNebula","SuperMassiveBlackHole"};
 
 	//There's alot isn't there?
 
@@ -138,6 +141,7 @@ public class Scanner extends PApplet{
 			fill(0,255,0);
 			rect(350,366,45,-(10+constrain(map((float)currentFuel,0,(float)fuelCap,0,235),0,235)));
 		}
+		
 	} // end of draw function
 	
 	
@@ -170,7 +174,18 @@ public class Scanner extends PApplet{
 	      println("Loading game? " + parseLine[1].equals(" \"event\":\"LoadGame\""));
 	      println("Fuel scoop? " + parseLine[1].equals(" \"event\":\"FuelScoop\""));
 	      if(parseLine[1].equals(" \"event\":\"Scan\"") == true) { // We scanned a planet
-	    	 String planetType =  getBodyName(parseLine); // run a function that figures out the planet/star's type	    	
+	    	 String planetType =  getBodyName(parseLine); // run a function that figures out the planet/star's type	 
+	    	 println("As it would seem, this stellar body's class is: " + planetType);
+	    	 println("Now is it terraformable?");
+	         String isTerraformable[] = parseLine[5].split(":");
+	         for(int i = 0; i < isTerraformable.length; i++) {
+	           println("["+i+"]   " + isTerraformable[i]);
+	         }
+	         println("And lets get the body's name.");
+	         String bodyName[] = parseLine[2].split(":");
+	         for(int i = 0; i < bodyName.length; i++) {
+	           println("["+i+"]   " + bodyName[i]);
+	         }
 	        //This is the end of the scan event IF Statement
 	    	 
 	      } else if(parseLine[1].equals(" \"event\":\"FSDJump\"") == true) { // We jumped to a new system, we can use this to auto-submit the values
@@ -257,30 +272,24 @@ public class Scanner extends PApplet{
 	     return null;
 	   }
 	 }
-	public String getBodyName(String Array[]) {
-		String parseLine[] = Array;
+	/**
+	 * getBodyName takes in the parsed input from the journal file, and outputs a planetary body classification. This function should only be in the Scan event IF statement.
+	 * @param inputArray - String array of the parsed journal file
+	 * @return bodyClass - String of the determined stellar body class
+	 */
+	public String getBodyName(String inputArray[]) {
+		String parseLine[] = inputArray;
 		println("We scanned a planet or star!");
         println("Now that the line is split, lets parse the data we care about because planet scan");
-        println("Lets Start with the planet's name.");
-        String bodyName[] = parseLine[2].split(":");
-        for(int i = 0; i < bodyName.length; i++) {
-          println("["+i+"]   " + bodyName[i]);
-        }
-        println("Now the body class.");
         String bodyClass[] = parseLine[6].split(":");
         for(int i = 0; i < bodyClass.length; i++) {
           println("["+i+"]   " + bodyClass[i]);
-        }
-        println("Now is it terraformable?");
-        String isTerraformable[] = parseLine[5].split(":");
-        for(int i = 0; i < isTerraformable.length; i++) {
-          println("["+i+"]   " + isTerraformable[i]);
         }
         String planetClass = ""; // make a local variable for keeping track of the body's class
         println("Lets figure out its value.");
         while(planetClass.equals("")) {
 	        for(int i = 0; i < bodyClasses.length; i++) {
-	          if((bodyClass[1].replaceAll("\"|/?_- ", "").toLowerCase()).equals((bodyClasses[i].replaceAll("\"|/?_- ", "").toLowerCase()))) {
+	          if((bodyClass[1].replaceAll("\"|/?_- ", "").toLowerCase()).equals((bodyClasses[i].replaceAll("-_/\",.#@^"," ").toLowerCase()))) {
 	            println("We have found the class of the body!");
 	            println("It is a: " + bodyClasses[i] + " class planet!");
 	            planetClass = bodyClasses[i];
@@ -293,7 +302,7 @@ public class Scanner extends PApplet{
 	        	println("This body's class is not in the planets section, lets test all the star types now.");
 	        }
 	        for(int i = 0; i < fuelStars.length; i++) {
-	        	if((bodyClass[1].replace('-', ' ').replace('_',' ').toLowerCase()).equals(fuelStars[i])) { //Lets start with the Stars we scoop from
+	        	if((bodyClass[1].replaceAll("-_/\",.#@^"," ").toLowerCase()).equals(fuelStars[i].replaceAll("-_/\",.#@^"," ").toLowerCase())) { //Lets start with the Stars we scoop from
 	        		println("We scanned a star that we can scoop fuel from!");
 	        		println("Its class is: " + fuelStars[i]);
 	        		planetClass = fuelStars[i];
@@ -307,7 +316,7 @@ public class Scanner extends PApplet{
 	        	println("This body's class is not in the fuel star section, lets test some other star sections now.");
 	        }
 	        for(int i = 0; i < dwarfStars.length; i++) {
-	        	if((bodyClass[1].replace('-', ' ').replace('_',' ').toLowerCase()).equals(dwarfStars[i])) { //Lets start with the Stars we scoop from
+	        	if((bodyClass[1].replaceAll("-_/\",.#@^"," ").toLowerCase()).equals(dwarfStars[i].replaceAll("-_/\",.#@^"," ").toLowerCase())) { //Lets start with the Stars we scoop from
 	        		println("We scanned a dwarf star!");
 	        		println("Its class is: " + dwarfStars[i]);
 	        		planetClass = dwarfStars[i];
@@ -321,7 +330,7 @@ public class Scanner extends PApplet{
 	        	println("This body's class is not in the dwarf star section, lets test some other star sections now.");
 	        }
 	        for(int i = 0; i < protoStars.length; i++) {
-	        	if((bodyClass[1].replace('-', ' ').replace('_',' ').toLowerCase()).equals(protoStars[i])) { //Lets start with the Stars we scoop from
+	        	if((bodyClass[1].replaceAll("-_/\",.#@^"," ").toLowerCase()).equals(protoStars[i].replaceAll("-_/\",.#@^"," ").toLowerCase())) { //Lets start with the Stars we scoop from
 	        		println("We scanned a proto star!");
 	        		println("Its class is: " + protoStars[i]);
 	        		planetClass = protoStars[i];
@@ -334,9 +343,179 @@ public class Scanner extends PApplet{
 	        } else {
 	        	println("This body's class is not in the proto star section, lets test some other star sections now.");
 	        }
+	        for(int i = 0; i < wolfRayetStars.length; i++) {
+	        	if((bodyClass[1].replaceAll("-_/\",.#@^"," ").toLowerCase()).equals(wolfRayetStars[i].replaceAll("-_/\",.#@^"," ").toLowerCase())) { //Lets start with the Stars we scoop from
+	        		println("We scanned a Wolf Rayet star!");
+	        		println("Its class is: " + wolfRayetStars[i]);
+	        		planetClass = wolfRayetStars[i];
+	        	}
+	        	
+	        }
+	        if(!planetClass.equals("")) {// Lets check again to see if we found the class of the star/body
+	        	println("We found its class under the wolf Rayet star section, no need to test the rest. Breaking the loop.");
+	        	break;
+	        } else {
+	        	println("This body's class is not in the wolf Rayet star section, lets test some other star sections now.");
+	        }
+	        for(int i = 0; i < carbonStars.length; i++) {
+	        	if((bodyClass[1].replaceAll("-_/\",.#@^"," ").toLowerCase()).equals(carbonStars[i])) { //Lets start with the Stars we scoop from
+	        		println("We scanned a Carbon star!");
+	        		println("Its class is: " + carbonStars[i]);
+	        		planetClass = carbonStars[i];
+	        	}
+	        	
+	        }
+	        if(!planetClass.equals("")) {// Lets check again to see if we found the class of the star/body
+	        	println("We found its class under the carbon star section, no need to test the rest. Breaking the loop.");
+	        	break;
+	        } else {
+	        	println("This body's class is not in the wolf Rayet star section, lets test some other star sections now.");
+	        }
+	        for(int i = 0; i < miscStars.length; i++) {
+	        	if((bodyClass[1].replaceAll("-_/\",.#@^"," ").toLowerCase()).equals(miscStars[i])) { //Lets start with the Stars we scoop from
+	        		println("We scanned a Misc star!");
+	        		println("Its class is: " + miscStars[i]);
+	        		planetClass = miscStars[i];
+	        	}
+	        	
+	        }
+	        if(!planetClass.equals("")) {// Lets check again to see if we found the class of the star/body
+	        	println("We found its class under the misc star section, no need to test the rest. Breaking the loop.");
+	        	break;
+	        } else {
+	        	println("This body's class is not in the misc star section, lets test some other star sections now.");
+	        }for(int i = 0; i < whiteDwarfStars.length; i++) {
+	        	if((bodyClass[1].replaceAll("-_/\",.#@^"," ").toLowerCase()).equals(whiteDwarfStars[i])) { //Lets start with the Stars we scoop from
+	        		println("We scanned a White Dwarf star!");
+	        		println("Its class is: " + whiteDwarfStars[i]);
+	        		planetClass = whiteDwarfStars[i];
+	        	}
+	        	
+	        }
+	        if(!planetClass.equals("")) {// Lets check again to see if we found the class of the star/body
+	        	println("We found its class under the White Dwarf star section, no need to test the rest. Breaking the loop.");
+	        	break;
+	        } else {
+	        	println("This body's class is not in the White Dwarf star section, lets test some other star sections now.");
+	        }
+	        for(int i = 0; i < specialStars.length; i++) {
+	        	if((bodyClass[1].replaceAll("-_/\",.#@^"," ").toLowerCase()).equals(specialStars[i])) { //Lets start with the Stars we scoop from
+	        		println("We scanned a Misc star!");
+	        		println("Its class is: " + specialStars[i]);
+	        		planetClass = specialStars[i];
+	        	}
+	        	
+	        }
+	        if(!planetClass.equals("")) {// Lets check again to see if we found the class of the star/body
+	        	println("We found its class under the special star section, no need to test the rest. Breaking the loop.");
+	        	break;
+	        } else {
+	        	println("This body's class is not in the special star section, lets test some other star sections now.");
+	        }
+	        for(int i = 0; i < superGiantStars.length; i++) {
+	        	if((bodyClass[1].replaceAll("-_/\",.#@^"," ").toLowerCase()).equals(superGiantStars[i])) { //Lets start with the Stars we scoop from
+	        		println("We scanned a Misc star!");
+	        		println("Its class is: " + superGiantStars[i]);
+	        		planetClass = superGiantStars[i];
+	        	}
+	        	
+	        }
+	        if(!planetClass.equals("")) {// Lets check again to see if we found the class of the star/body
+	        	println("We found its class under the Super Giant star section, no need to test the rest. Breaking the loop.");
+	        	break;
+	        } else {
+	        	println("This body's class is not in the Super Giant star section.");
+	        }
+	        println("If we see this console output, it means that thestellar body class was not determinable, restarting the loop.");
         }
         println("Class: " + planetClass);
         return planetClass;
+	} // end of getBodyName function
+	/**
+	 * This function will handle crash events, it will be used to generalize all crash logs  and outputs
+	 * @param e - Exception to handle
+	 */
+	public void handleCrashEvents(Exception e) {
+		PrintWriter writer;
+		writer = createWriter("C:\\Elite Exploration Estimator\\crashes\\crash-"+month()+"-"+day()+"-"+year()+"_"+hour()+"-"+minute()+".log");
+		println("OHSNAP WE CRASHED!!!!");
+		println("WE BETTER TELL THE USER!");
+		int chosen = JOptionPane.showConfirmDialog(null, "Elite: Dangerous Exploration Data Profit Estimator has" + System.getProperty("line.separator") + "crashed. Error: " + e.toString() + System.getProperty("line.separator") + "Would you like to submit an error report?", "CRITICAL FATAL 2ERROR", JOptionPane.ERROR_MESSAGE);
+		if(chosen == 0) {
+			println("Yay user hit yes! Lets make that error report");
+			writer.println("------------------------------------------------------------------------------------------------------------");
+			writer.println("{ERROR REPORT FOR ELITE: DANGEROUS EXPLORATION DATA PROFIT ESTIMATOR}");
+			writer.println("This error report was generated on: " + month()+"/"+day()+"/"+year()+"(MM/DD/YY)");
+			writer.println("This error report was generated due to the following error: " + e.toString());
+			writer.println("------------------------------------------------------------------------------------------------------------");
+			writer.println("Stack Trace:");
+			writer.println("------------------------------------------------------------------------------------------------------------");
+			e.printStackTrace(writer);
+			writer.println("------------------------------------------------------------------------------------------------------------");
+			writer.println("Current State of all Global Variables:");
+			writer.println("------------------------------------------------------------------------------------------------------------");
+			writer.println("currentCredits     " + currentCredits);
+			writer.println("currentFuel        " + currentFuel);
+			writer.println("currentLine        " + currentLine);
+			writer.println("currentSystem      " + currentSystem);
+			writer.println("explorationCredits " + explorationCredits);
+			writer.println("filename           " + filename);
+			writer.println("filepath           " + filepath);
+			writer.println("fuelCap            " + fuelCap);
+			writer.println("inputLine          " + inputLine);
+			writer.println("lineCount          " + lineCount);
+			writer.println("previousLine       " + previousLine);
+			writer.println("systemCredits      " + systemCredits);
+			writer.println("------------------------------------------------------------------------------------------------------------");
+			writer.println("Current State of all Global Array Variables:");
+			writer.println("------------------------------------------------------------------------------------------------------------");
+			for(int i = 0; i < bodyClasses.length; i++) {
+				writer.println("bodyClasses["+i+"]     " + bodyClasses[i]);
+			}
+			for(int i = 0; i < carbonStars.length; i++) {
+				writer.println("carbonStars["+i+"]     " + carbonStars[i]);
+			}
+			for(int i = 0; i < dwarfStars.length; i++) {
+				writer.println("dwarfStars["+i+"]     " + dwarfStars[i]);
+			}
+			for(int i = 0; i < fileLines.length; i++) {
+				writer.println("fileLines["+i+"]     " + fileLines[i]);
+			}
+			for(int i = 0; i < fuelStars.length; i++) {
+				writer.println("fuelStars["+i+"]     " + fuelStars[i]);
+			}
+			for(int i = 0; i < miscStars.length; i++) {
+				writer.println("miscStars["+i+"]     " + miscStars[i]);
+			}
+			for(int i = 0; i < protoStars.length; i++) {
+				writer.println("protoStars["+i+"]     " + protoStars[i]);
+			}
+			for(int i = 0; i < scannedBodyDetails.length; i++) {
+				writer.println("scannedBodyDetails["+i+"]     " + scannedBodyDetails[i]);
+			}
+			for(int i = 0; i < specialStars.length; i++) {
+				writer.println("specialStars["+i+"]     " + specialStars[i]);
+			}
+			for(int i = 0; i <superGiantStars.length; i++) {
+				writer.println("superGiantStars["+i+"]     " + superGiantStars[i]);
+			}
+			for(int i = 0; i < whiteDwarfStars.length; i++) {
+				writer.println("whiteDwarfStars["+i+"]     " + whiteDwarfStars[i]);
+			}
+			for(int i = 0; i < wolfRayetStars.length; i++) {
+				writer.println("wolfRayetStars["+i+"]     " + wolfRayetStars[i]);
+			}
+			writer.println("------------------------------------------------------------------------------------------------------------");
+			writer.println("Error log completed.");
+			writer.flush();
+			writer.close();
+			JOptionPane.showMessageDialog(null, "Error report created at C:\\Elite Exploration Estimator\\crashes." + System.getProperty("line.separator")+"Please include your PC's specs with the error report and your OS.", "CRITICAL FATAL ERROR", JOptionPane.INFORMATION_MESSAGE);
+			System.exit(2);
+			
+		} else {
+			println("User did not hit YES, closing program instead of handling error.");
+			System.exit(1);
+		}
 	}
 
 }
