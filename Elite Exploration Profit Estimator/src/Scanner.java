@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.Locale;
 import processing.core.*;
 import javax.swing.JOptionPane; // will be eventually used for error handling and crash stuff
-import java.lang.management.*;
 
 
 
@@ -31,6 +30,7 @@ public class Scanner extends PApplet{
 	String whiteDwarfStars[] = {"D","DA","DAB","DAO","DAZ","DAV","DB","DBZ","DBV","DO","DOV","DQ","DC","DCV","DX"};
 	String specialStars[] = {"N","H"};
 	String superGiantStars[] = {"A_BlueWhiteSuperGiant","F_WhiteSuperGiant","M_RedSuperGiant","M_RedGiant","K_OrangeGiant","RoguePlanet","Nebula","StellarRemnantNebula","SuperMassiveBlackHole"};
+	boolean foundLoad = false;
 
 	//There's alot isn't there?
 
@@ -56,7 +56,8 @@ public class Scanner extends PApplet{
 	public void setup() {
 		primaryFont = createFont("Georgia",24);
 		secondaryFont = createFont("Arial",20);
-		getLogFile("C:\\Users\\TekCastPork\\Saved Games\\Frontier Developments\\Elite Dangerous");
+	//	getLogFile("C:\\Users\\TekCastPork\\Saved Games\\Frontier Developments\\Elite Dangerous");
+		getLogFile(System.getProperty("user.home") + File.separator + "Saved Games" + File.separator + "Frontier Developments" + File.separator + "Elite Dangerous");
 		println("Grabbed file name is: " + filename);
 		println("Path: " + filepath);
 		fileLines = loadStrings(filepath);
@@ -68,7 +69,8 @@ public class Scanner extends PApplet{
 		
 		for(int i = 0; i < fileLines.length; i++) {
 			String loadParse[] = fileLines[i].split(",");
-			if(loadParse[1].equals(" \"event\":\"LoadGame\"")) {
+			if(loadParse[1].equals(" \"event\":\"LoadGame\"") && foundLoad == false) {
+				foundLoad = true;
 				println("We found the LoadGame event!");
 				println("Lets parse it out.");
 				String tempParse[] = loadParse[8].split(":");
@@ -77,6 +79,9 @@ public class Scanner extends PApplet{
 		        currentFuel = Double.parseDouble((tempParse[1].replaceAll("^\"|\"$", "")));
 		        println("Loaded fuel levels. Current level is "+currentFuel+"/"+fuelCap);
 		        tempParse = loadParse[11].split(":");
+		        for(int j = 0; j < tempParse.length; j++) {
+		        	println(tempParse[j]);
+		        }
 		        currentCredits = Integer.parseInt(tempParse[1]);
 				
 			} else if(loadParse[1].equals(" \"event\":\"Location\"") == true) { // We jumped to a new system, we can use this to autosubmit the value
