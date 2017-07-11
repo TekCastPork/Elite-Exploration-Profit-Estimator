@@ -12,4 +12,4 @@ Un-processed
 	String miscStars[] --
 	String whiteDwarfStars[] --
 	String specialStars[] --
-	String superGiantStars[] --
+	String superGiantStars[]
