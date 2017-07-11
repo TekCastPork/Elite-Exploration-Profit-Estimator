@@ -14,7 +14,7 @@ public class Scanner extends PApplet{
 	String filepath = "";
 	String inputLine = "";
 	String previousLine = "";
-	String scannedBodyDetails[] = {"","","",""}; // Name,Type,Terraformable?,Value
+	String scannedBodyDetails[] = {"1","2","3","4"}; // Name,Type,Terraformable?,Value
 
 	//All of the planetary body classes
 
@@ -34,7 +34,7 @@ public class Scanner extends PApplet{
 
 	//There's alot isn't there?
 
-	String fileLines[] = new String[99999999];
+	String fileLines[] = new String[99999999]; // While I doubt the commander;s log will get this big, I've set the max size of the array this high just in case.
 	int lineCount;
 	int currentLine = 0;
 	String currentSystem = "";
@@ -56,55 +56,29 @@ public class Scanner extends PApplet{
 	public void setup() {
 		primaryFont = createFont("Georgia",24);
 		secondaryFont = createFont("Arial",20);
-	//	getLogFile("C:\\Users\\TekCastPork\\Saved Games\\Frontier Developments\\Elite Dangerous");
-		getLogFile(System.getProperty("user.home") + File.separator + "Saved Games" + File.separator + "Frontier Developments" + File.separator + "Elite Dangerous");
+	//	getLogFile("C:\\Users\\TekCastPork\\Saved Games\\Frontier Developments\\Elite Dangerous"); // Primitive method of getting to the Elite: Dangerous journals on Windows
+		getLogFile(System.getProperty("user.home") + File.separator + "Saved Games" + File.separator + "Frontier Developments" + File.separator + "Elite Dangerous"); // Better method for getting to the journal files that is adaptive to different filesystems, Windows only, and assuming default location
 		println("Grabbed file name is: " + filename);
 		println("Path: " + filepath);
 		fileLines = loadStrings(filepath);
 		lineCount = fileLines.length;
+		try {
 		println("["+(lineCount-1)+"]"+"{"+lineCount+"}"+fileLines[lineCount-1]);
-		println("Length is: " + lineCount);		
-		
-		println("Because we are setting up lets quickly scan the lines for a LoadGame event to gather some initial data.");
-		
-		for(int i = 0; i < fileLines.length; i++) {
-			String loadParse[] = fileLines[i].split(",");
-			if(loadParse[1].equals(" \"event\":\"LoadGame\"") && foundLoad == false) {
-				foundLoad = true;
-				println("We found the LoadGame event!");
-				println("Lets parse it out.");
-				String tempParse[] = loadParse[8].split(":");
-				fuelCap = Double.parseDouble((tempParse[1].replaceAll("^\"|\"$", "")));
-				tempParse = loadParse[7].split(":");
-		        currentFuel = Double.parseDouble((tempParse[1].replaceAll("^\"|\"$", "")));
-		        println("Loaded fuel levels. Current level is "+currentFuel+"/"+fuelCap);
-		        tempParse = loadParse[11].split(":");
-		        for(int j = 0; j < tempParse.length; j++) {
-		        	println(tempParse[j]);
-		        }
-		        currentCredits = Integer.parseInt(tempParse[1]);
-				
-			} else if(loadParse[1].equals(" \"event\":\"Location\"") == true) { // We jumped to a new system, we can use this to autosubmit the value
-		    	  println("We are loading in! Lets get the location so we can show it.");
-		    	  String systemParse[] = fileLines[i].split(",");
-		    	  String galaxyParse[] = systemParse[3].split(":");
-		    	  currentSystem = galaxyParse[1];
-		    	  currentSystem = currentSystem.replaceAll("^\"|\"$", "");
-		    	  //This is the end of the Location event IF statement		        
-			  }	else if(loadParse[1].equals(" \"event\":\"FSDJump\"") == true) { // We jumped to a new system
-		    	  println("We are loading in! Lets get the location so we can show it.");
-		    	  String systemParse[] = fileLines[i].split(",");
-		    	  String galaxyParse[] = systemParse[2].split(":");
-		    	  currentSystem = galaxyParse[1];
-		    	  currentSystem = currentSystem.replaceAll("^\"|\"$", "");
-		    	  //This is the end of the Location event IF statement		        
-			  }			
+		} catch(Exception e) {
+			handleCrashEvents(e);
 		}
+		println("Length is: " + lineCount);				
+		println("Because we are setting up lets quickly scan the lines for a LoadGame event to gather some initial data.");
+		setupActions();		
 		String printLine[] = fileLines[fileLines.length-1].split(",");
 		for(int i = 0; i < printLine.length; i++) {
 	        println("["+i+"]   " + printLine[i]);
 	    }
+		try {
 		previousLine = fileLines[fileLines.length-1];
+		} catch (Exception e) {
+			handleCrashEvents(e);
+		}
 	}
 	
 	public void draw() {
@@ -117,12 +91,16 @@ public class Scanner extends PApplet{
 		textAlign(LEFT);
 		grabEvents(); // call a function that handles events in the commander journal
 		textSize(20);
-		text("Current System:" + currentSystem,5,80);
-		text("Current Credits: "+(NumberFormat.getNumberInstance(Locale.US).format(currentCredits))+"cr",5,130);
-		text("System Credits: "+(NumberFormat.getNumberInstance(Locale.US).format(systemCredits))+"cr",5,150);
-		text("Total Credits: "+(NumberFormat.getNumberInstance(Locale.US).format(currentCredits+systemCredits))+"cr",5,170);
-		text("Profit: "+(NumberFormat.getNumberInstance(Locale.US).format((currentCredits+systemCredits)-currentCredits))+"cr",5,190);
-//		text("mouseX: " + mouseX + "  mouseY: " + mouseY,10,100);
+		text("Current System:" + currentSystem,5,90);
+		text("Current Credits: "+(NumberFormat.getNumberInstance(Locale.US).format(currentCredits))+"Cr",5,130);
+		text("System Credits: "+(NumberFormat.getNumberInstance(Locale.US).format(systemCredits))+"Cr",5,150);
+		text("Total Credits: "+(NumberFormat.getNumberInstance(Locale.US).format(currentCredits+systemCredits))+"Cr",5,170);
+		text("Profit: "+(NumberFormat.getNumberInstance(Locale.US).format((currentCredits+systemCredits)-currentCredits))+"Cr",5,190);
+		text("Scanned Body Name:   " + scannedBodyDetails[0],5,235);
+		text("Scanned Body Type:   " + scannedBodyDetails[1],5,265);
+		text("Terraforming Status: " + scannedBodyDetails[2],5,295);
+		text("Scanned Body Value:  " +(NumberFormat.getNumberInstance(Locale.US).format(Integer.parseInt(scannedBodyDetails[3])))+"Cr",5,325);
+	//	text("mouseX: " + mouseX + "  mouseY: " + mouseY,10,100); // I use this every now and then for placing stuff in the GUI
 		fill(40,40,40);
 		rect(340,110,65,267);
 		fill(20,20,20);
@@ -159,8 +137,16 @@ public class Scanner extends PApplet{
 		println("Let's analyse the file we picked.");
 	    fileLines = loadStrings(filepath);
 	    println("What is on the last line?");
+	    try {
 	    println("["+(lineCount-1)+"]"+"{"+lineCount+"}"+fileLines[lineCount-1]);
+	    } catch( Exception e) {
+	    	handleCrashEvents(e);
+	    }
+	    try {
 	    inputLine = fileLines[lineCount-1];
+	    } catch(Exception e) {
+	    	handleCrashEvents(e);
+	    }
 		if(inputLine.equals(previousLine)) { // if we read a dupe
 		      println("Yo daug we read a dupe line!");
 	    } else {
@@ -174,23 +160,31 @@ public class Scanner extends PApplet{
 	      for(int i = 0; i < parseLine.length; i++) {
 	        println("["+i+"]   " + parseLine[i]);
 	      }
-	      println("Scan? " + parseLine[1].equals(" \"event\":\"Scan\""));
+	      try {
+	      println("Scan? " + parseLine[1].equals(" \"event\":\"Scan\""));	      
 	      println("Hyperspace jump? " + parseLine[1].equals(" \"event\":\"FSDJump\""));
 	      println("Loading game? " + parseLine[1].equals(" \"event\":\"LoadGame\""));
 	      println("Fuel scoop? " + parseLine[1].equals(" \"event\":\"FuelScoop\""));
+	      println("Sell Exploration Data? " + parseLine[1].equals(" \"event\":\"SellExplorationData\""));
+	      } catch(Exception e) {
+	    	  handleCrashEvents(e);
+	      }
 	      if(parseLine[1].equals(" \"event\":\"Scan\"") == true) { // We scanned a planet
-	    	 String planetType =  getBodyName(parseLine); // run a function that figures out the planet/star's type	 
+	    	 String planetType =  getBodyType(parseLine); // run a function that figures out the planet/star's type	 
 	    	 println("As it would seem, this stellar body's class is: " + planetType);
+	    	 scannedBodyDetails[1] = planetType;
 	    	 println("Now is it terraformable?");
 	         String isTerraformable[] = parseLine[5].split(":");
 	         for(int i = 0; i < isTerraformable.length; i++) {
 	           println("["+i+"]   " + isTerraformable[i]);
 	         }
+	         scannedBodyDetails[2] = isTerraformable[1];
 	         println("And lets get the body's name.");
 	         String bodyName[] = parseLine[2].split(":");
 	         for(int i = 0; i < bodyName.length; i++) {
 	           println("["+i+"]   " + bodyName[i]);
 	         }
+	         scannedBodyDetails[0] = bodyName[1];
 	        //This is the end of the scan event IF Statement
 	    	 
 	      } else if(parseLine[1].equals(" \"event\":\"FSDJump\"") == true) { // We jumped to a new system, we can use this to auto-submit the values
@@ -226,6 +220,17 @@ public class Scanner extends PApplet{
 	    	  currentSystem = systemParse[1];
 	    	  currentSystem = currentSystem.replaceAll("^\"|\"$", "");
 	    	  //This is the end of the Location event IF statement		        
+		  } else if(parseLine[1].equals(" \"event\":\"SellExplorationData\"") == true) {// We sold our Cartography data
+			  println("We sold the data, lets update some variables.");
+			  println("We made " + explorationCredits + "credits during this exploration route.");
+			  println("Lets add this to the currentCredits variable");
+			  currentCredits += explorationCredits; 
+			  println("We now have " + currentCredits + " (changed from " + (currentCredits-explorationCredits)+")");
+			  println("Now resetting the exploration credits variable.");
+			  explorationCredits = 0;
+			  println("exploration credits reset to zero.");
+
+	    	  //This is the end of the SellExplorationData event IF statement		        
 		  }
 	    } // this is the end of the else statement that allows us to analyze stuff		
 	lineCount = fileLines.length;
@@ -282,7 +287,7 @@ public class Scanner extends PApplet{
 	 * @param inputArray - String array of the parsed journal file
 	 * @return bodyClass - String of the determined stellar body class
 	 */
-	public String getBodyName(String inputArray[]) {
+	public String getBodyType(String inputArray[]) {
 		String parseLine[] = inputArray;
 		println("We scanned a planet or star!");
         println("Now that the line is split, lets parse the data we care about because planet scan");
@@ -441,8 +446,9 @@ public class Scanner extends PApplet{
 	 * @param e - Exception to handle
 	 */
 	public void handleCrashEvents(Exception e) {
+
 		PrintWriter writer;
-		writer = createWriter("C:\\Elite Exploration Estimator\\crashes\\crash-"+month()+"-"+day()+"-"+year()+"_"+hour()+"-"+minute()+".log");
+		writer = createWriter(System.getProperty("user.home") + File.separator + "Elite Exploration Estimator" + File.separator + "CrashLog"+month()+"-"+day()+"-"+year()+"_"+hour()+"-"+minute()+".log");
 		println("OHSNAP WE CRASHED!!!!");
 		println("WE BETTER TELL THE USER!");
 		int chosen = JOptionPane.showConfirmDialog(null, "Elite: Dangerous Exploration Data Profit Estimator has" + System.getProperty("line.separator") + "crashed. Error: " + e.toString() + System.getProperty("line.separator") + "Would you like to submit an error report?", "CRITICAL FATAL 2ERROR", JOptionPane.ERROR_MESSAGE);
@@ -523,5 +529,40 @@ public class Scanner extends PApplet{
 		}
 	}
 
+	public void setupActions() {
+		for(int i = 0; i < fileLines.length; i++) {
+			String loadParse[] = fileLines[i].split(",");
+			if(loadParse[1].equals(" \"event\":\"LoadGame\"") && foundLoad == false) {
+				foundLoad = true;
+				println("We found the LoadGame event!");
+				println("Lets parse it out.");
+				String tempParse[] = loadParse[8].split(":");
+				fuelCap = Double.parseDouble((tempParse[1].replaceAll("^\"|\"$", "")));
+				tempParse = loadParse[7].split(":");
+		        currentFuel = Double.parseDouble((tempParse[1].replaceAll("^\"|\"$", "")));
+		        println("Loaded fuel levels. Current level is "+currentFuel+"/"+fuelCap);
+		        tempParse = loadParse[11].split(":");
+		        for(int j = 0; j < tempParse.length; j++) {
+		        	println(tempParse[j]);
+		        }
+		        currentCredits = Integer.parseInt(tempParse[1]);
+				
+			} else if(loadParse[1].equals(" \"event\":\"Location\"") == true) { // We jumped to a new system, we can use this to autosubmit the value
+		    	  println("We are loading in! Lets get the location so we can show it.");
+		    	  String systemParse[] = fileLines[i].split(",");
+		    	  String galaxyParse[] = systemParse[3].split(":");
+		    	  currentSystem = galaxyParse[1];
+		    	  currentSystem = currentSystem.replaceAll("^\"|\"$", "");
+		    	  //This is the end of the Location event IF statement		        
+			  }	else if(loadParse[1].equals(" \"event\":\"FSDJump\"") == true) { // We jumped to a new system
+		    	  println("We are loading in! Lets get the location so we can show it.");
+		    	  String systemParse[] = fileLines[i].split(",");
+		    	  String galaxyParse[] = systemParse[2].split(":");
+		    	  currentSystem = galaxyParse[1];
+		    	  currentSystem = currentSystem.replaceAll("^\"|\"$", "");
+		    	  //This is the end of the Location event IF statement		        
+			  }			
+		}
+	}
 }
 
