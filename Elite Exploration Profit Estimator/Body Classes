@@ -1,0 +1,12 @@
+String bodyClasses[] = {"Metal rich body","High metal content body","Rocky body","Icy body","Rocky ice body","Earthlike body","Water world","Ammonia world","Water giant","Water giant with life",
+"Gas giant with water based life","Gas giant with ammonia based life","Sudarsky class i gas giant","Sudarsky class ii gas giant","Sudarsky class iii gas giant",
+"Sudarsky class iv gas giant","Sudarsky class v gas giant","Helium rich gas giant","Helium gas giant"};
+String fuelStars[] = {"K","G","B","F","O","A","M"};
+String dwarfStars[] = {"L","T","Y"};
+String protoStars[] = {"AeBe","TTS"};
+String wolfRayetStars[] = {"W","WN","WNC","WC","WO"};
+String carbonStars[] = {"CS","C","CN","CJ","CHd"};
+String miscStars[] = {"MS","S","X"};
+String whiteDwarfStars[] = {"D","DA","DAB","DAO","DAZ","DAV","DB","DBZ","DBV","DO","DOV","DQ","DC","DCV","DX"};
+String specialStars[] = {"N","H"};
+String superGiantStars[] = {"A_BlueWhiteSuperGiant","F_WhiteSuperGiant","M_RedSuperGiant","M_RedGiant","K_OrangeGiant","RoguePlanet","Nebula","StellarRemnantNebula","SuperMassiveBlackHole"};

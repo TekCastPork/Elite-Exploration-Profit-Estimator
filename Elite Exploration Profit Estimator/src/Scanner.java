@@ -1,6 +1,9 @@
 import java.io.File;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import processing.core.*;
@@ -14,7 +17,7 @@ public class Scanner extends PApplet{
 	String filepath = "";
 	String inputLine = "";
 	String previousLine = "";
-	String scannedBodyDetails[] = {"1","2","3","4"}; // Name,Type,Terraformable?,Value
+	String scannedBodyDetails[] = {"0","0","0","0"}; // Name,Type,Terraformable?,Value
 
 	//All of the planetary body classes
 
@@ -46,6 +49,28 @@ public class Scanner extends PApplet{
 	int systemCredits = 0;
 
 	public static void main(String[] args) {
+		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+		    @Override
+		    public void uncaughtException(Thread t, Throwable e) {
+		        Calendar cal = Calendar.getInstance();
+		        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+
+		        String filename = System.getProperty("user.root") + File.separator + "Elite Exploration Estimator" + File.separator + "Unhandled Crashes" + File.separator + "Crash"+sdf.format(cal.getTime())+".txt";
+
+		        PrintStream writer;
+		        try {
+		            writer = new PrintStream(filename);
+		            writer.println(e.getClass() + ": " + e.getMessage());
+		            for (int i = 0; i < e.getStackTrace().length; i++) {
+		                writer.println(e.getStackTrace()[i].toString());
+		            }
+
+		        } catch (Exception e1) {
+		            e1.printStackTrace();
+		        }
+
+		    }
+		});
 		PApplet.main("Scanner");
 	}
 	
@@ -54,9 +79,9 @@ public class Scanner extends PApplet{
 	}
 	
 	public void setup() {
+		JOptionPane.showMessageDialog(null, "This program is still in SUPER ALPHA! Expect bugs and crashes.", "Welcome!", JOptionPane.INFORMATION_MESSAGE);
 		primaryFont = createFont("Georgia",24);
 		secondaryFont = createFont("Arial",20);
-	//	getLogFile("C:\\Users\\TekCastPork\\Saved Games\\Frontier Developments\\Elite Dangerous"); // Primitive method of getting to the Elite: Dangerous journals on Windows
 		getLogFile(System.getProperty("user.home") + File.separator + "Saved Games" + File.separator + "Frontier Developments" + File.separator + "Elite Dangerous"); // Better method for getting to the journal files that is adaptive to different filesystems, Windows only, and assuming default location
 		println("Grabbed file name is: " + filename);
 		println("Path: " + filepath);
@@ -82,6 +107,28 @@ public class Scanner extends PApplet{
 	}
 	
 	public void draw() {
+		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+		    @Override
+		    public void uncaughtException(Thread t, Throwable e) {
+		        Calendar cal = Calendar.getInstance();
+		        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+
+		        String filename = System.getProperty("user.home") + File.separator + "Elite Exploration Estimator" + File.separator + "Unhandled" + File.separator + "Crash"+sdf.format(cal.getTime())+".txt";
+
+		        PrintStream writer;
+		        try {
+		            writer = new PrintStream(filename, "UTF-8");
+		            writer.println(e.getClass() + ": " + e.getMessage());
+		            for (int i = 0; i < e.getStackTrace().length; i++) {
+		                writer.println(e.getStackTrace()[i].toString());
+		            }
+
+		        } catch (Exception e1) {
+		            e1.printStackTrace();
+		        }
+
+		    }
+		});
 		clear(); // clear the window of anything
 		background(80,80,80); // set the background color
 		fill(0,0,0);
@@ -100,7 +147,6 @@ public class Scanner extends PApplet{
 		text("Scanned Body Type:   " + scannedBodyDetails[1],5,265);
 		text("Terraforming Status: " + scannedBodyDetails[2],5,295);
 		text("Scanned Body Value:  " +(NumberFormat.getNumberInstance(Locale.US).format(Integer.parseInt(scannedBodyDetails[3])))+"Cr",5,325);
-	//	text("mouseX: " + mouseX + "  mouseY: " + mouseY,10,100); // I use this every now and then for placing stuff in the GUI
 		fill(40,40,40);
 		rect(340,110,65,267);
 		fill(20,20,20);
@@ -171,8 +217,11 @@ public class Scanner extends PApplet{
 	      }
 	      if(parseLine[1].equals(" \"event\":\"Scan\"") == true) { // We scanned a planet
 	    	 String planetType =  getBodyType(parseLine); // run a function that figures out the planet/star's type	 
+	    	 int planetValue = getBodyValue(planetType);
 	    	 println("As it would seem, this stellar body's class is: " + planetType);
+	    	 println("It's value is: " + planetValue);
 	    	 scannedBodyDetails[1] = planetType;
+	    	 scannedBodyDetails[4] = Integer.toString(planetValue);
 	    	 println("Now is it terraformable?");
 	         String isTerraformable[] = parseLine[5].split(":");
 	         for(int i = 0; i < isTerraformable.length; i++) {
@@ -192,6 +241,8 @@ public class Scanner extends PApplet{
 	        explorationCredits += systemCredits;
 	        String fuelParse[] = parseLine[15].split(":");
 	        currentFuel = Integer.parseInt(fuelParse[1]);
+	        String systemParse[] = parseLine[2].split(":");
+	        currentSystem = systemParse[1];
 	        //This is the end of the FSDJump event IF Statement
 	        
 	      } else if(parseLine[1].equals(" \"event\":\"LoadGame\"") == true) { // We loaded the game, lets get fuel data and current credits
@@ -441,6 +492,104 @@ public class Scanner extends PApplet{
         println("Class: " + planetClass);
         return planetClass;
 	} // end of getBodyName function
+	/**
+	 * 
+	 * @param bodyType - String
+	 * @return bodyValue - Integer
+	 */
+	public int getBodyValue(String bodyType) {
+		int result = 0;
+		println("Now beginning to figure out the value of the Planetary body.");
+		println("Using String: " + bodyType);
+		int fuelValues[] = {2916,2919,3012,2932,6135,2949,2903};
+		int dwarfValues[] = {2889,2895,2881};
+		int protoValues[] = {2000,2881};
+		int[][] bodyClassValue = new int[][]{
+			{65045	,34310	,928	,1246	,1240	,627885	,301410	,320203	,1824	,1824	,2314	,1721	,7013	,53663	,2693	,2799	,2761	,2095	,2095},
+			{65045	,412249	,181104	,1246	,1240	,627885	,694971	,320203	,1824	,1824	,2314	,1721	,7013	,53663	,2693	,2799	,2761	,2095	,2095}
+
+		};
+		for(int i = 0; i < bodyClasses.length; i++) {
+			if(bodyType.equals(bodyClasses[i].replaceAll("\"|/?_- ", "").toLowerCase())) {
+				println("We found a match to the type, now if it terraformable?");
+				if((scannedBodyDetails[2].replaceAll(".,;: \'\"\\", "").toLowerCase()).equals("terraformable")) {
+					println("It's terraformable!");
+					println("It's worth: " + bodyClassValue[i][1]);
+					result = bodyClassValue[i][1];
+				} else {
+					println("It's not terraformable...");
+					println("It's worth: " + bodyClassValue[i][0]);
+					result = bodyClassValue[i][0];
+				}
+			}
+		} // end bodyClass for loop
+		for(int i = 0; i < fuelStars.length; i++) {
+			if(bodyType.equals(fuelStars[i].replaceAll("\"|/\\,.?_- ", "").toLowerCase())) {
+				println("We found the scanned body value.");
+				println("This " + bodyType + "is worth: " + fuelValues[i]);			
+				result = fuelValues[i];
+			}
+		} // end fuel stars for loop
+		for(int i = 0; i < dwarfStars.length; i++) {
+			if(bodyType.equals(dwarfStars[i].replaceAll("\"|/\\,.?_- ", "").toLowerCase())) {
+				println("We found the scanned body value.");
+				println("This " + bodyType + "is worth: " + dwarfValues[i]);	
+				result = dwarfValues[i];
+			}
+		} // end dwarf stars for loop
+		for(int i = 0; i < protoStars.length; i++) {
+			if(bodyType.equals(protoStars[i].replaceAll("\"|/\\,.?_- ", "").toLowerCase())) {
+				println("We found the scanned body value.");
+				println("This " + bodyType + "is worth: " + protoValues[i]);	
+				result = protoValues[i];
+			}
+		} // end proto stars for loop
+		for(int i = 0; i < wolfRayetStars.length; i++) {
+			if(bodyType.equals(wolfRayetStars[i].replaceAll("\"|/\\,.?_- ", "").toLowerCase())) {
+				println("We found the scanned body value.");
+				println("This " + bodyType + "is worth: 2931");	
+				result = 2931;
+			}
+		} // end wolfRayet stars for loop
+		for(int i = 0; i < carbonStars.length; i++) {
+			if(bodyType.equals(carbonStars[i].replaceAll("\"|/\\,.?_- ", "").toLowerCase())) {
+				println("We found the scanned body value.");
+				println("This " + bodyType + "is worth: 2930");		
+				result = 2930;
+			}
+		} // end carbon stars for loop
+		for(int i = 0; i < miscStars.length; i++) {
+			if(bodyType.equals(miscStars[i].replaceAll("\"|/\\,.?_- ", "").toLowerCase())) {
+				println("We found the scanned body value.");
+				println("This " + bodyType + "is worth: 2000");		
+				result = 2000;
+			}
+		} // end misc stars for loop
+		for(int i = 0; i < whiteDwarfStars.length; i++) {
+			if(bodyType.equals(whiteDwarfStars[i].replaceAll("\"|/\\,.?_- ", "").toLowerCase())) {
+				println("We found the scanned body value.");
+				println("This " + bodyType + "is worth: 34294");	
+				result = 34294;
+			}
+		} // end whiteDwarf stars for loop
+		int specialValues[] = {54782,60589};
+		for(int i = 0; i < specialStars.length; i++) {
+			if(bodyType.equals(specialStars[i].replaceAll("\"|/\\,.?_- ", "").toLowerCase())) {
+				println("We found the scanned body value.");
+				println("This " + bodyType + "is worth: " + specialValues[i]);	
+				result = specialValues[i];
+			}
+		} // end special stars for loop
+		int superGiantValues[] = {2949,2932,2903,2903,2916,2000,2000,2000,60589};
+		for(int i = 0; i < superGiantStars.length; i++) {
+			if(bodyType.equals(superGiantStars[i].replaceAll("\"|/\\,.?_- ", "").toLowerCase())) {
+				println("We found the scanned body value.");
+				println("This " + bodyType + "is worth: " + superGiantValues[i]);	
+				result = superGiantValues[i];
+			}
+		} // end special stars for loop
+		return result;		
+	}
 	/**
 	 * This function will handle crash events, it will be used to generalize all crash logs  and outputs
 	 * @param e - Exception to handle
