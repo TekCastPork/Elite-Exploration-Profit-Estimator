@@ -18,7 +18,7 @@ public class Scanner extends PApplet{
 	String filepath = "";
 	String inputLine = "";
 	String previousLine = "";
-	String scannedBodyDetails[] = {"0","0","0","0"}; // Name,Type,Terraformable?,Value
+	String scannedBodyDetails[] = {"","","","0"}; // Name,Type,Terraformable?,Value
 	JSONObject parser;
 
 	//All of the planetary body classes
@@ -121,7 +121,7 @@ public class Scanner extends PApplet{
 		textAlign(LEFT);
 		grabEvents(); // call a function that handles events in the commander journal
 		textSize(20);
-		text("Current System:" + currentSystem,5,90);
+		text("Current System: " + currentSystem,5,90);
 		text("Current Credits: "+(NumberFormat.getNumberInstance(Locale.US).format(currentCredits))+"Cr",5,130);
 		text("System Credits: "+(NumberFormat.getNumberInstance(Locale.US).format(systemCredits))+"Cr",5,150);
 		text("Credits Earned: "+(NumberFormat.getNumberInstance(Locale.US).format(explorationCredits))+"Cr",5,170);
@@ -131,27 +131,17 @@ public class Scanner extends PApplet{
 		text("Terraforming Status: " + scannedBodyDetails[2],5,295);
 		text("Scanned Body Value:  " +(NumberFormat.getNumberInstance(Locale.US).format(Integer.parseInt(scannedBodyDetails[3])))+"Cr",5,325);
 		fill(40,40,40);
-		rect(340,110,65,267);
+		rect(40,410,48+255,50);
 		fill(20,20,20);
-		rect(350,366,45,-247);	
+		rect(50,420,48+235,30);	
 		textFont(secondaryFont);
-		textAlign(CENTER);
-		text("Fuel",372,70);
-		text(currentFuel+"/"+fuelCap+"T",372,100);
-		textAlign(LEFT,CENTER);
-		fill(255,0,0);
-		text("-- E",410,355);
-		fill(0,255,0);
-		text("-- F",410,120);
-		fill(255,255,0);
-		text("-- 1/2",410,235);
-		textAlign(LEFT);
+		text("Fuel:" + currentFuel + "/" + fuelCap,50,400);
 		if(currentFuel <= 10) {
 			fill(255,0,0);
-			rect(350,366,45,-(10+constrain(map((float)currentFuel,0,(float)fuelCap,0,235),0,235)));			
+			rect(50,420,45+constrain(map((float)currentFuel,0,(float)fuelCap,0,235),0,235),30);			
 		} else {
 			fill(0,255,0);
-			rect(350,366,45,-(10+constrain(map((float)currentFuel,0,(float)fuelCap,0,235),0,235)));
+			rect(50,420,45+constrain(map((float)currentFuel,0,(float)fuelCap,0,235),0,235),30);
 		}
 		
 	} // end of draw function
@@ -187,7 +177,22 @@ public class Scanner extends PApplet{
 	      String eventType = parser.getString("event");
 	      
 	      if(eventType.equals("Scan") == true) { // We scanned a planet
-	    	 String planetType =  getBodyType(parser.getString("PlanetClass")); // run a function that figures out the planet/star's type	
+	    	  String planetType = "";
+	    	  boolean isStar = false;
+	    	 try {
+	    		 planetType =  getBodyType(parser.getString("PlanetClass")); // run a function that figures out the planet/star's type	
+	    		 isStar = false;
+	    	 } catch (Exception e) {
+	    		 e.printStackTrace();
+	    		 println("PlanetClass doesnt exist, must be a star.");
+	    		 try {
+	    		 planetType = getBodyType(parser.getString("StarType"));
+	    		 isStar = true;
+	    		 } catch (Exception e1) {
+	    			 e1.printStackTrace();	
+	    			 isStar = false;
+	    		 }	    		 
+	    	 }
 	    	 int planetValue = getBodyValue(planetType);
 	    	 systemCredits += planetValue;
 	    	 println("As it would seem, this stellar body's class is: " + planetType);
@@ -195,7 +200,12 @@ public class Scanner extends PApplet{
 	    	 scannedBodyDetails[1] = planetType;
 	    	 scannedBodyDetails[3] = Integer.toString(planetValue);
 	    	 println("Now is it terraformable?");
-	         String terraform = parser.getString("TerraformState");
+	    	 String terraform = "";
+	    	 if(isStar = false) {
+	    		 terraform = parser.getString("TerraformState");
+	    	 } else {
+	    		 terraform = "";
+	    	 }
 	         scannedBodyDetails[2] = terraform;
 	         println("And lets get the body's name.");
 	         String bodyName = parser.getString("BodyName");	         
@@ -206,7 +216,7 @@ public class Scanner extends PApplet{
 	        println("Yo we jumped to a new system! Lets sumbit the values and say some stuff.");
 	        explorationCredits += systemCredits;
 	        systemCredits = 0;
-	        currentFuel = parser.getInt("FuelLevel");
+	        currentFuel = parser.getDouble("FuelLevel");
 	        currentSystem = parser.getString("StarSystem");
 	        scannedBodyDetails[0] = "";
 	        scannedBodyDetails[1] = "";
@@ -224,7 +234,7 @@ public class Scanner extends PApplet{
 	      } else if(eventType.equals("FuelScoop") == true) { // We scooped star piss
 	        println("Yo we scooped some star piss!");
 	        println("lets parse this to determine how much we got.");
-	        currentFuel += parser.getInt("Scooped");
+	        currentFuel += parser.getDouble("Scooped");
 	        //This is the end of the FuelScoop event IF Statement
 	      } else if(eventType.equals("Location") == true) { // We jumped to a new system, we can use this to autosubmit the value
 	    	  println("We are loading in! Lets get the location so we can show it.");
@@ -244,7 +254,7 @@ public class Scanner extends PApplet{
 		  } else if(eventType.equals("RefuelAll")) {
 			  println("We bought fuel.");
 			  currentCredits -= parser.getInt("Cost");
-			  currentFuel += parser.getInt("Amount");
+			  currentFuel += parser.getDouble("Amount");
 			// end of Refuel all IF statement
 		  }
 	    } // this is the end of the else statement that allows us to analyze stuff		
@@ -454,6 +464,7 @@ public class Scanner extends PApplet{
 	/**
 	 * 
 	 * @param bodyType - String
+	 * @param isStar - Boolean
 	 * @return bodyValue - Integer
 	 */
 	public int getBodyValue(String bodyType) {
@@ -474,11 +485,11 @@ public class Scanner extends PApplet{
 				if((scannedBodyDetails[2].replaceAll(".,;: '\"", "").toLowerCase()).equals("terraformable")) {
 					println("It's terraformable!");
 					println("It's worth: " + bodyClassValue[1][i]);
-					result = bodyClassValue[0][i];
+					result = bodyClassValue[1][i];
 				} else {
 					println("It's not terraformable...");
 					println("It's worth: " + bodyClassValue[0][i]);
-					result = bodyClassValue[1][i];
+					result = bodyClassValue[0][i];
 				}
 			}
 		} // end bodyClass for loop
