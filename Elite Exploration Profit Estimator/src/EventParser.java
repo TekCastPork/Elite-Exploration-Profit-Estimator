@@ -1,6 +1,10 @@
-import javax.swing.JOptionPane; // will be eventually used for error handling and crash stuff
 import org.json.*;
 
+/**
+ * This class parses the events from the game and outputs data in an array for later displaying
+ * @author TekCastPork
+ *
+ */
 public class EventParser {
 	static String bodyClasses[] = {"Metal rich body","High metal content body","Rocky body","Icy body","Rocky ice body","Earthlike body","Water world","Ammonia world","Water giant","Water giant with life",
 							"Gas giant with water based life","Gas giant with ammonia based life","Sudarsky class i gas giant","Sudarsky class ii gas giant","Sudarsky class iii gas giant",
@@ -16,6 +20,10 @@ public class EventParser {
 	static String superGiantStars[] = {"A_BlueWhiteSuperGiant","F_WhiteSuperGiant","M_RedSuperGiant","M_RedGiant","K_OrangeGiant","RoguePlanet","Nebula","StellarRemnantNebula","SuperMassiveBlackHole"};
 	static String[] events = {"Continued","BuyAmmo","BuyDrones","BuyExplorationData","BuyTradeData","FSDJump","JetConeBoost","LoadGame","MarketBuy","MarketSell","MissionCompleted","ModuleBuy","ModuleRetrieve","ModuleSell","ModuleSellRemote","PayFines","PayLegacyFines","PowerplaySalary","RefuelAll","RefuelPartial","Repair","RepairAll","RestockVehicle","Resurrect","Scan","SellDrones","SellExplorationData","ShipyardBuy","ShipyardSell","FuelScoop","Location"};
 	static JSONObject parser;
+	/**
+	 * Quick function to shorten debug function calls
+	 * @param msg - String
+	 */
 	public static void println(String msg) {
 		System.out.println(msg);;
 	}
@@ -100,7 +108,7 @@ public class EventParser {
 //			println("We bought Exploration Data, lets get the price and modify some variables later on.");
 		case 4:
 //			println("We bought Trade Data, lets get the price and modify some variables later on.");
-			output[0] = "Buy";
+			output[0] = "CashLoss";
 			output[1] = Integer.toString(parser.getInt("Cost"));
 			break;
 		case 5:
@@ -122,7 +130,7 @@ public class EventParser {
 			break;
 		case 8:
 //			println("We bought something from the market");
-			output[0] = "Buy";
+			output[0] = "CashLoss";
 			output[1] = Integer.toString(parser.getInt("Cost"));
 			break;
 		case 9:
@@ -137,37 +145,37 @@ public class EventParser {
 			break;
 		case 11:
 //			println("We bought a module for our ship.");
-			output[0] = "Buy";
+			output[0] = "CashLoss";
 			output[1] = Integer.toString(parser.getInt("BuyPrice"));
 			break;
 		case 12:
 //			println("We retrieved a module.");
-			output[0] = "Buy";
+			output[0] = "CashLoss";
 			output[1] = Integer.toString(parser.getInt("Cost"));
 			break;
 		case 13:
 //			println("We sold a module.");
-			output[0] = "Sell";
+			output[0] = "CashGain";
 			output[1] = Integer.toString(parser.getInt("SellPrice"));
 			break;
 		case 14:
 //			println("We remotely sold a module.");
-			output[0] = "Sell";
+			output[0] = "CashGain";
 			output[1] = Integer.toString(parser.getInt("SellPrice"));
 			break;
 		case 15:
 //			println("We payed some fines.");
-			output[0] = "Fines";
+			output[0] = "CashLoss";
 			output[1] = Integer.toString(parser.getInt("Amount"));
 			break;
 		case 16:
 //			println("We payed some legacy fines.");
-			output[0] = "Fines";
+			output[0] = "CashLoss";
 			output[1] = Integer.toString(parser.getInt("Amount"));
 			break;
 		case 17:
 //			println("We got our salary from Powerplay.");
-			output[0] = "Salary";
+			output[0] = "CashGain";
 			output[1] = Integer.toString(parser.getInt("Amount"));
 			break;
 		case 18:
@@ -184,22 +192,22 @@ public class EventParser {
 			break;
 		case 20:
 //			println("We repaired something.");
-			output[0] = "Repair";
+			output[0] = "CashLoss";
 			output[1] = Integer.toString(parser.getInt("Cost"));
 			break;
 		case 21:
 //			println("We repaired everything.");
-			output[0] = "Repair";
+			output[0] = "CashLoss";
 			output[1] = Integer.toString(parser.getInt("Cost"));
 			break;
 		case 22:
 //			println("We restocked our vehicles.");
-			output[0] = "Buy";
+			output[0] = "CashLoss";
 			output[1] = Integer.toString(parser.getInt("Cost"));
 			break;
 		case 23:
 //			println("We are respawning because we died.");
-			output[0] = "Respawn";
+			output[0] = "CashLoss";
 			output[1] = Integer.toString(parser.getInt("Cost"));
 			break;
 		case 24:
@@ -215,26 +223,26 @@ public class EventParser {
 				output[3] = "null";
 			}
 			output[4] = Integer.toString(getBodyValue(bodyType[0],output[3],bodyType[1])); // the worth of the planet
+			output[5] = parser.getString("BodyName");
 			break;
 		case 25:
 //			println("We sold some drones.");
-			output[0] = "Sell";
+			output[0] = "CashGain";
 			output[1] = Integer.toString(parser.getInt("TotalSale"));
 			break;
 		case 26:
 //			println("We sold our exploration data.");
 			output[0] = "ExplorationSell";
-			output[1] = Integer.toString(parser.getInt("BaseValue"));
-			output[2] = Integer.toString(parser.getInt("Bonus"));
+			output[1] = Integer.toString(parser.getInt("BaseValue")+ parser.getInt("Bonus"));
 			break;
 		case 27:
 //			println("We bought something from the shipyard.");
-			output[0] = "Buy";
+			output[0] = "CashLoss";
 			output[1] = Integer.toString(parser.getInt("ShipPrice"));
 			break;
 		case 28:
 //			println("We sold something to the shipyard.");
-			output[0] = "Sell";
+			output[0] = "CashGain";
 			output[1] = Integer.toString(parser.getInt("ShipPrice"));
 			break;
 		case 29:
@@ -341,6 +349,5 @@ public class EventParser {
 		} // end IF statement system
 		return outputValue;		
 	} // end of body value function
-
 
 }

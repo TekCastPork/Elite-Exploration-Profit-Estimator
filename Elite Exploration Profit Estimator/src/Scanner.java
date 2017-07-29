@@ -1,54 +1,29 @@
 import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Locale;
 import processing.core.*;
-import javax.swing.JOptionPane; // will be eventually used for error handling and crash stuff
-import org.json.*;
+import javax.swing.JOptionPane;
 
 
 
+/**
+ * This is the main class that draws everything to the initial GUI
+ * @author TekCastPork
+ *
+ */
 public class Scanner extends PApplet{
 	PFont secondaryFont,primaryFont;
 	String filename = "";
 	String filepath = "";
 	String inputLine = "";
 	String previousLine = "";
-	String scannedBodyDetails[] = {"","","","0"}; // Name,Type,Terraformable?,Value
-	JSONObject parser;
-
-	//All of the planetary body classes
-
-	String bodyClasses[] = {"Metal rich body","High metal content body","Rocky body","Icy body","Rocky ice body","Earthlike body","Water world","Ammonia world","Water giant","Water giant with life",
-	                        "Gas giant with water based life","Gas giant with ammonia based life","Sudarsky class i gas giant","Sudarsky class ii gas giant","Sudarsky class iii gas giant",
-	                        "Sudarsky class iv gas giant","Sudarsky class v gas giant","Helium rich gas giant","Helium gas giant"};
-	String fuelStars[] = {"K","G","B","F","O","A","M"};
-	String dwarfStars[] = {"L","T","Y"};
-	String protoStars[] = {"AeBe","TTS"};
-	String wolfRayetStars[] = {"W","WN","WNC","WC","WO"};
-	String carbonStars[] = {"CS","C","CN","CJ","CHd"};
-	String miscStars[] = {"MS","S","X"};
-	String whiteDwarfStars[] = {"D","DA","DAB","DAO","DAZ","DAV","DB","DBZ","DBV","DO","DOV","DQ","DC","DCV","DX"};
-	String specialStars[] = {"N","H"};
-	String superGiantStars[] = {"A_BlueWhiteSuperGiant","F_WhiteSuperGiant","M_RedSuperGiant","M_RedGiant","K_OrangeGiant","RoguePlanet","Nebula","StellarRemnantNebula","SuperMassiveBlackHole"};
-	boolean foundLoad = false;
-
-	//There's alot isn't there?
-
 	String fileLines[] = new String[500010]; // The journal file can only hit since 500k before a new file is made, so I added a few extra slots incase of failure
 	int lineCount;
 	int currentLine = 0;
-	String currentSystem = "";
 	File l;
-	double fuelCap = 32;
-	double currentFuel = 32;
-	int currentCredits = 0;
-	int explorationCredits = 0;
-	int systemCredits = 0;
 
 	public static void main(String[] args) {
 		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
@@ -57,8 +32,8 @@ public class Scanner extends PApplet{
 		        Calendar cal = Calendar.getInstance();
 		        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
 
-		        String filename = "C:/crashlogs/"+sdf.format(cal.getTime())+".txt";
-
+		        String filename = System.getProperty("user.home") + File.separator + "Elite Exploration Estimator" + File.separator + "Unhandled Crashes"+sdf.format(cal.getTime())+".log";
+		        
 		        PrintStream writer;
 		        try {
 		            writer = new PrintStream(filename, "UTF-8");
@@ -78,8 +53,9 @@ public class Scanner extends PApplet{
 	}
 	
 	public void settings() {
-		size(500,500);		
+		size(250,40);
 	}
+
 	
 	public void setup() {
 
@@ -98,7 +74,7 @@ public class Scanner extends PApplet{
 		}
 		println("Length is: " + lineCount);				
 		println("Because we are setting up lets quickly scan the lines for a LoadGame event to gather some initial data.");
-		setupActions();		
+//		setupActions();		
 		String printLine[] = fileLines[fileLines.length-1].split(",");
 		for(int i = 0; i < printLine.length; i++) {
 	        println("["+i+"]   " + printLine[i]);
@@ -108,18 +84,16 @@ public class Scanner extends PApplet{
 		} catch (Exception e) {
 			handleCrashEvents(e);
 		}
-		parser = new JSONObject();
+		Display.main(args);
 	}
-	//TODO Redo entire event system here after finishing EventParser class
+
 	public void draw() {
 		clear(); // clear the window of anything
 		background(80,80,80); // set the background color
+		textSize(16);
+		text("Do not close this window.",5,15);
+		text("It will close the program.",5,35);
 		fill(0,0,0);
-		textFont(primaryFont);
-		textAlign(LEFT,TOP);
-		text("TekCastPork's Elite: Dangerous Exploration "+ System.getProperty("line.separator") + "Profit Estimation Program V0.1",1,1);
-		textAlign(LEFT);
-		textSize(20);
 		fileLines = loadStrings(filepath);
 	    println("What is on the last line?");
 	    try {
@@ -139,22 +113,13 @@ public class Scanner extends PApplet{
 	      for(int i = 0; i < bodyInfo.length; i++) {
 	    	  println("["+i+"]   " + bodyInfo[i]);
 	      }
+	      GUIDraw.inputData(bodyInfo);
+	      GUIDraw.updateScreen();
 	      println("We are done parsing info.");
 	      previousLine = inputLine;
 	    }
-		fill(40,40,40);
-		rect(40,410,48+255,50);
-		fill(20,20,20);
-		rect(50,420,48+235,30);	
 		textFont(secondaryFont);
-		text("Fuel:" + currentFuel + "/" + fuelCap,50,400);
-		if(currentFuel <= 10) {
-			fill(255,0,0);
-			rect(50,420,45+constrain(map((float)currentFuel,0,(float)fuelCap,0,235),0,235),30);			
-		} else {
-			fill(0,255,0);
-			rect(50,420,45+constrain(map((float)currentFuel,0,(float)fuelCap,0,235),0,235),30);
-		}
+		
 		
 	} // end of draw function
 	
@@ -213,7 +178,7 @@ public class Scanner extends PApplet{
 		int chosen = JOptionPane.showConfirmDialog(null, "Elite: Dangerous Exploration Data Profit Estimator has" + System.getProperty("line.separator") + "crashed. Error: " + e.toString() + System.getProperty("line.separator") + "Would you like to submit an error report?", "CRITICAL FATAL 2ERROR", JOptionPane.ERROR_MESSAGE);
 		if(chosen == 0) {
 			println("Yay user hit yes! Lets make that error report");
-			writer = createWriter(System.getProperty("user.home") + File.separator + "Elite Exploration Estimator" + File.separator + "CrashLog"+month()+"-"+day()+"-"+year()+"_"+hour()+"-"+minute()+".log");
+			writer = createWriter(System.getProperty("user.home") + File.separator + "Elite Exploration Estimator" + File.separator + "Handled Crashes"+month()+"-"+day()+"-"+year()+"_"+hour()+"-"+minute()+".log");
 			writer.println("------------------------------------------------------------------------------------------------------------");
 			writer.println("{ERROR REPORT FOR ELITE: DANGEROUS EXPLORATION DATA PROFIT ESTIMATOR}");
 			writer.println("This error report was generated on: " + month()+"/"+day()+"/"+year()+"(MM/DD/YY)");
@@ -223,59 +188,20 @@ public class Scanner extends PApplet{
 			writer.println("------------------------------------------------------------------------------------------------------------");
 			e.printStackTrace(writer);
 			writer.println("------------------------------------------------------------------------------------------------------------");
-			writer.println("Current State of all Global Variables:");
+			writer.println("Current State of Variables:");
 			writer.println("------------------------------------------------------------------------------------------------------------");
-			writer.println("currentCredits     " + currentCredits);
-			writer.println("currentFuel        " + currentFuel);
+			writer.println("currentCredits     " + GUIDraw.currentCredits);
+			writer.println("currentFuel        " + GUIDraw.currentFuel);
 			writer.println("currentLine        " + currentLine);
-			writer.println("currentSystem      " + currentSystem);
-			writer.println("explorationCredits " + explorationCredits);
+			writer.println("currentSystem      " + GUIDraw.currentSystem);
+			writer.println("explorationCredits " + GUIDraw.explorationCredits);
 			writer.println("filename           " + filename);
 			writer.println("filepath           " + filepath);
-			writer.println("fuelCap            " + fuelCap);
+			writer.println("fuelCap            " + GUIDraw.fuelCap);
 			writer.println("inputLine          " + inputLine);
 			writer.println("lineCount          " + lineCount);
 			writer.println("previousLine       " + previousLine);
-			writer.println("systemCredits      " + systemCredits);
-			writer.println("------------------------------------------------------------------------------------------------------------");
-			writer.println("Current State of all Global Array Variables:");
-			writer.println("------------------------------------------------------------------------------------------------------------");
-			for(int i = 0; i < bodyClasses.length; i++) {
-				writer.println("bodyClasses["+i+"]     " + bodyClasses[i]);
-			}
-			for(int i = 0; i < carbonStars.length; i++) {
-				writer.println("carbonStars["+i+"]     " + carbonStars[i]);
-			}
-			for(int i = 0; i < dwarfStars.length; i++) {
-				writer.println("dwarfStars["+i+"]     " + dwarfStars[i]);
-			}
-			for(int i = 0; i < fileLines.length; i++) {
-				writer.println("fileLines["+i+"]     " + fileLines[i]);
-			}
-			for(int i = 0; i < fuelStars.length; i++) {
-				writer.println("fuelStars["+i+"]     " + fuelStars[i]);
-			}
-			for(int i = 0; i < miscStars.length; i++) {
-				writer.println("miscStars["+i+"]     " + miscStars[i]);
-			}
-			for(int i = 0; i < protoStars.length; i++) {
-				writer.println("protoStars["+i+"]     " + protoStars[i]);
-			}
-			for(int i = 0; i < scannedBodyDetails.length; i++) {
-				writer.println("scannedBodyDetails["+i+"]     " + scannedBodyDetails[i]);
-			}
-			for(int i = 0; i < specialStars.length; i++) {
-				writer.println("specialStars["+i+"]     " + specialStars[i]);
-			}
-			for(int i = 0; i <superGiantStars.length; i++) {
-				writer.println("superGiantStars["+i+"]     " + superGiantStars[i]);
-			}
-			for(int i = 0; i < whiteDwarfStars.length; i++) {
-				writer.println("whiteDwarfStars["+i+"]     " + whiteDwarfStars[i]);
-			}
-			for(int i = 0; i < wolfRayetStars.length; i++) {
-				writer.println("wolfRayetStars["+i+"]     " + wolfRayetStars[i]);
-			}
+			writer.println("systemCredits      " + GUIDraw.systemCredits);
 			writer.println("------------------------------------------------------------------------------------------------------------");
 			writer.println("Error log completed.");
 			writer.flush();
@@ -288,41 +214,6 @@ public class Scanner extends PApplet{
 			System.exit(1);
 		}
 	}
-
-	public void setupActions() {
-		for(int i = 0; i < fileLines.length; i++) {
-			String loadParse[] = fileLines[i].split(",");
-			if(loadParse[1].equals(" \"event\":\"LoadGame\"") && foundLoad == false) {
-				foundLoad = true;
-				println("We found the LoadGame event!");
-				println("Lets parse it out.");
-				String tempParse[] = loadParse[8].split(":");
-				fuelCap = Double.parseDouble((tempParse[1].replaceAll("^\"|\"$", "")));
-				tempParse = loadParse[7].split(":");
-		        currentFuel = Double.parseDouble((tempParse[1].replaceAll("^\"|\"$", "")));
-		        println("Loaded fuel levels. Current level is "+currentFuel+"/"+fuelCap);
-		        tempParse = loadParse[11].split(":");
-		        for(int j = 0; j < tempParse.length; j++) {
-		        	println(tempParse[j]);
-		        }
-		        currentCredits = Integer.parseInt(tempParse[1]);
-				
-			} else if(loadParse[1].equals(" \"event\":\"Location\"") == true) { // We jumped to a new system, we can use this to autosubmit the value
-		    	  println("We are loading in! Lets get the location so we can show it.");
-		    	  String systemParse[] = fileLines[i].split(",");
-		    	  String galaxyParse[] = systemParse[3].split(":");
-		    	  currentSystem = galaxyParse[1];
-		    	  currentSystem = currentSystem.replaceAll("^\"|\"$", "");
-		    	  //This is the end of the Location event IF statement		        
-			  }	else if(loadParse[1].equals(" \"event\":\"FSDJump\"") == true) { // We jumped to a new system
-		    	  println("We are loading in! Lets get the location so we can show it.");
-		    	  String systemParse[] = fileLines[i].split(",");
-		    	  String galaxyParse[] = systemParse[2].split(":");
-		    	  currentSystem = galaxyParse[1];
-		    	  currentSystem = currentSystem.replaceAll("^\"|\"$", "");
-		    	  //This is the end of the Location event IF statement		        
-			  }			
-		}
-	}
 }
+
 

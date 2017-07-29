@@ -1,0 +1,18 @@
+Buy/pay fines 
+{"CashLoss",Cost (int as String)}
+Jump
+{"Jump","StarSystem",FuelLevel (double as String)}
+JetConeBoost
+{"Boost",BoostValue (double as String)}
+Load
+{"Load",Credits (int as String)}
+Sell
+{"CashGain",Amount (int as String)}
+Refuel
+{"Fuel",Amount (double as String),Cost (double as String)}
+Scan
+{"Scan",Class,Type,TerraformState,Value (int as String),Name}
+FuelScoop
+{"FuelScoop",Total (double as String)}
+Location
+{"Location",StarSystem}
