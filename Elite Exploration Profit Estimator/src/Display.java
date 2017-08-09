@@ -2,12 +2,19 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.Font;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 import javax.swing.JProgressBar;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
-
 import java.awt.Color;
 import java.awt.Dimension;
 import javax.swing.border.BevelBorder;
@@ -17,21 +24,12 @@ public class Display {
 	public JFrame frmEliteDangerousExploration;
 	public static JProgressBar fuelLevelBar = new JProgressBar();;
 	public static JLabel fuelLabel = new JLabel("Fuel");
+	public static JLabel lblSuperCharge = new JLabel("Your Frame Shift Drive is supercharged.");
 
 	/**
 	 * Launch the application.
 	 */
-	public static void main(String[] args) {
-		try {
-		    for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-		        if ("Nimbus".equals(info.getName())) {
-		            UIManager.setLookAndFeel(info.getClassName());
-		            break;
-		        }
-		    }
-		} catch (Exception e) {
-		    // If Nimbus is not available, you can set the GUI to another look and feel.
-		}
+	public static void main() {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -41,6 +39,30 @@ public class Display {
 					e.printStackTrace();
 				}
 			}
+		});
+		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+		    @Override
+		    public void uncaughtException(Thread t, Throwable e) {
+		        Calendar cal = Calendar.getInstance();
+		        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+		        JOptionPane.showMessageDialog(null, "An unhandled crash has caused the Display class of this program to crash." + System.getProperty("line.separator")
+		        + "The program will probably appear to keep running, but in reality it is not." + System.getProperty("line.separator")
+		        + "Please submit any crash reports in the CrashLog folder (only the most recent ones please) as well as your log file.", "ALERT!", JOptionPane.ERROR_MESSAGE);
+		        String filename = System.getProperty("user.home") + File.separator + "Elite Exploration Estimator" + File.separator + "CrashLogs" + File.separator + "Unhandled Crash"+sdf.format(cal.getTime())+".log";
+		        
+		        PrintStream writer;
+		        try {
+		            writer = new PrintStream(filename, "UTF-8");
+		            writer.println(e.getClass() + ": " + e.getMessage());
+		            for (int i = 0; i < e.getStackTrace().length; i++) {
+		                writer.println(e.getStackTrace()[i].toString());
+		            }
+
+		        } catch (Exception e1) {
+		            e1.printStackTrace();
+		        }
+
+		    }
 		});
 	}
 
@@ -65,19 +87,21 @@ public class Display {
 	public static JLabel lblStellarBodyType = new JLabel("Stellar Body Type: ");
 	public static JLabel lblTerraformStatus = new JLabel("Terraform Status: ");
 	public static JLabel lblStellarBodyValue = new JLabel("Stellar Body Value: ");
+	private final JLabel lblVersioninfo = new JLabel("VersionInfo");
 	private void initialize() {
 		frmEliteDangerousExploration = new JFrame();
 		frmEliteDangerousExploration.getContentPane().setBackground(Color.LIGHT_GRAY);
 		frmEliteDangerousExploration.setBackground(new Color(0, 0, 102));
 		frmEliteDangerousExploration.setTitle("Elite: Dangerous Exploration Data Profit Estimator");
-		frmEliteDangerousExploration.setBounds(100, 100, 606, 700);
+		frmEliteDangerousExploration.setBounds(100, 100, 570, 700);
 		frmEliteDangerousExploration.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frmEliteDangerousExploration.getContentPane().setLayout(null);
 		
-		JLabel lblTekcastporksEliteDangerous = new JLabel("TekCastPork's Elite: Dangerous Exploration Data Profit Estimator V A0.0005");
+		JLabel lblTekcastporksEliteDangerous = new JLabel("TekCastPork's Elite: Dangerous Exploration Data Profit Estimator");
 		lblTekcastporksEliteDangerous.setFont(new Font("Roboto", Font.BOLD | Font.ITALIC, 17));
 		lblTekcastporksEliteDangerous.setBounds(6, 6, 573, 16);
 		frmEliteDangerousExploration.getContentPane().add(lblTekcastporksEliteDangerous);
+		fuelLevelBar.setForeground(Color.GREEN);
 		
 		fuelLevelBar.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		fuelLevelBar.setMinimumSize(new Dimension(10, 20));
@@ -85,11 +109,10 @@ public class Display {
 		fuelLevelBar.setPreferredSize(new Dimension(150, 20));
 		fuelLevelBar.setName("Fuel Level");
 		fuelLevelBar.setOrientation(SwingConstants.VERTICAL);
-		fuelLevelBar.setValue((int) GUIDraw.currentFuel);
+		fuelLevelBar.setValue((int) Resources.currentFuel);
 		fuelLevelBar.setBounds(16, 388, 47, 267);
 		fuelLevelBar.setMinimum(0);
-		fuelLevelBar.setMaximum((int) GUIDraw.fuelCap);
-		UIManager.put("ProgressBar.foreground", Color.RED);  //colour of progress bar
+		fuelLevelBar.setMaximum((int) Resources.fuelCap);
 		frmEliteDangerousExploration.getContentPane().add(fuelLevelBar);
 		
 		JLabel lblFuelLevels = new JLabel("Fuel Levels");
@@ -160,5 +183,50 @@ public class Display {
 		lblStellarBodyValue.setFont(new Font("Roboto", Font.PLAIN, 16));
 		lblStellarBodyValue.setBounds(75, 548, 441, 16);
 		frmEliteDangerousExploration.getContentPane().add(lblStellarBodyValue);
+		
+		
+		lblSuperCharge.setFont(new Font("Roboto", Font.BOLD | Font.ITALIC, 20));
+		lblSuperCharge.setBounds(82, 360, 360, 24);
+		frmEliteDangerousExploration.getContentPane().add(lblSuperCharge);
+		lblVersioninfo.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblVersioninfo.setFont(new Font("Dialog", Font.BOLD | Font.ITALIC, 12));
+		lblVersioninfo.setBounds(438, 639, 104, 16);
+		lblVersioninfo.setText(Resources.versionInfo);
+		
+		frmEliteDangerousExploration.getContentPane().add(lblVersioninfo);
+		frmEliteDangerousExploration.addWindowListener( new WindowAdapter()
+		{
+		    public void windowClosing(WindowEvent e)
+		    {
+		        JFrame frame = (JFrame)e.getSource();
+		 
+	        	Logger.printLog("The exit button was pushed, since that is the only time I'm called, closing log file.");
+	        	Logger.printLog("Saving credit info and stuff so we can preload stuff next time.");
+	        	try {
+					Saver.saveData();
+				} catch (FileNotFoundException e2) {
+					e2.printStackTrace();
+				}
+	    		Logger.printLog("-----------------------------------------------------");
+	    		Logger.printLog("Program Terminated with Exit button.");
+	    		Logger.logger.flush();
+	    		Logger.logger.close();
+	        	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//	        	try {
+//					PrintWriter saveFunction = new PrintWriter(System.getProperty("user.home") + File.separator + "Elite Exploration Estimator" + File.separator + "CrashLogs" + File.separator + "Unhandled Crash"+sdf.format(cal.getTime())+".log");
+//				} catch (FileNotFoundException e2) {
+//					e2.printStackTrace();
+//				}
+	        	
+	        	try {
+					Thread.sleep(500);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+	        	
+	        	System.exit(0);
+	        	
+	        }
+		});
 	}
 }

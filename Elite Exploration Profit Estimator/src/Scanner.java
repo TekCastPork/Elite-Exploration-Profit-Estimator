@@ -1,10 +1,12 @@
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
-import processing.core.*;
 import javax.swing.JOptionPane;
 
 
@@ -14,25 +16,15 @@ import javax.swing.JOptionPane;
  * @author TekCastPork
  *
  */
-public class Scanner extends PApplet{
-	PFont secondaryFont,primaryFont;
-	String filename = "";
-	String filepath = "";
-	String inputLine = "";
-	String previousLine = "";
-	String fileLines[] = new String[500010]; // The journal file can only hit since 500k before a new file is made, so I added a few extra slots incase of failure
-	int lineCount;
-	int currentLine = 0;
-	File l;
-
+public class Scanner {
 	public static void main(String[] args) {
 		Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
 		    @Override
 		    public void uncaughtException(Thread t, Throwable e) {
-		        Calendar cal = Calendar.getInstance();
-		        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-
-		        String filename = System.getProperty("user.home") + File.separator + "Elite Exploration Estimator" + File.separator + "Unhandled Crashes"+sdf.format(cal.getTime())+".log";
+		        JOptionPane.showMessageDialog(null, "An unhandled crash has caused the main java class of this program to crash." + System.getProperty("line.separator")
+		        + "The program will probably appear to keep running, but in reality it is not." + System.getProperty("line.separator")
+		        + "Please submit any crash reports in the CrashLog folder (only the most recent ones please) as well as your log file.", "ALERT!", JOptionPane.ERROR_MESSAGE);
+		        String filename = System.getProperty("user.home") + File.separator + "Elite Exploration Estimator" + File.separator + "CrashLogs" + File.separator + "Unhandled Crash"+Resources.sdf.format(Resources.cal.getTime())+".log";
 		        
 		        PrintStream writer;
 		        try {
@@ -48,79 +40,101 @@ public class Scanner extends PApplet{
 
 		    }
 		});
-		
-		PApplet.main("Scanner");
-	}
-	
-	public void settings() {
-		size(250,40);
-	}
-
-	
-	public void setup() {
-
-		JOptionPane.showMessageDialog(null, "This program is still in SUPER ALPHA! Expect bugs and crashes.", "Welcome!", JOptionPane.INFORMATION_MESSAGE);
-		primaryFont = createFont("Georgia",24);
-		secondaryFont = createFont("Arial",20);
-		getLogFile(System.getProperty("user.home") + File.separator + "Saved Games" + File.separator + "Frontier Developments" + File.separator + "Elite Dangerous"); // Better method for getting to the journal files that is adaptive to different filesystems, Windows only, and assuming default location
-		println("Grabbed file name is: " + filename);
-		println("Path: " + filepath);
-		fileLines = loadStrings(filepath);
-		lineCount = fileLines.length;
-		try {
-		println("["+(lineCount-1)+"]"+"{"+lineCount+"}"+fileLines[lineCount-1]);
-		} catch(Exception e) {
-			handleCrashEvents(e);
+		setup();
+		while(true) {
+			draw();
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
 		}
-		println("Length is: " + lineCount);				
-		println("Because we are setting up lets quickly scan the lines for a LoadGame event to gather some initial data.");
-//		setupActions();		
-		String printLine[] = fileLines[fileLines.length-1].split(",");
-		for(int i = 0; i < printLine.length; i++) {
-	        println("["+i+"]   " + printLine[i]);
+	}
+
+	public static void setup() {
+		Logger.init();
+		Logger.printLog("TekCastPork's Elite: Dangerous Exploration Data Profit Estimator");
+		Logger.printLog("This log file was generated from program version " + Resources.versionInfo);
+		Logger.printLog("----------------------------------------------------------");
+		JOptionPane.showMessageDialog(null, "This program is still in SUPER ALPHA! Expect bugs and crashes.", "Welcome!", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(null, "Please start your instance of Elite: Dangerous first, then click ok on this popup." + System.getProperty("line.separator") + "This makes sure that the correct journal file is read.", "Welcome!", JOptionPane.INFORMATION_MESSAGE);
+		try {
+			Loader.loadConfig();
+		} catch (IOException e2) {
+			e2.printStackTrace();
+		}
+		getLogFile(System.getProperty("user.home") + File.separator + "Saved Games" + File.separator + "Frontier Developments" + File.separator + "Elite Dangerous");
+		Logger.printLog("Grabbed file name is: " + Resources.filename);
+		try {
+			Resources.lines = Files.readAllLines(Paths.get(Resources.filepath), Charset.forName("ISO-8859-1"));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		Resources.lineCount = Resources.lines.size();
+		Logger.printLog("Length is: " + Resources.lineCount);				
+		Logger.printLog("Because we are setting up lets quickly scan the lines for a LoadGame event to gather some initial data.");
+		Logger.printLog("We should also search for a location event to figure out where we are.");
+		for(int i = 0; i < Resources.lines.size(); i++) {
+	        Logger.printLog("["+i+"]   " + Resources.lines.get(i));
+	        EventParser.inputData(Resources.lines.get(i));
+	        int eventNumber = EventParser.determineEvent();
+	        if(eventNumber == 7) {
+	        	Logger.printLog("We found the LoadGame event.");
+	        	GUIDraw.inputData(EventParser.gatherInfo(7));
+	        	GUIDraw.updateScreen();
+	        } else if(eventNumber == 30) {
+	        	Logger.printLog("We found the Location event.");
+	        	GUIDraw.inputData(EventParser.gatherInfo(30));
+	        	GUIDraw.updateScreen();
+	        }
 	    }
 		try {
-		previousLine = fileLines[fileLines.length-1];
+			Resources.previousLine = Resources.lines.get(Resources.lines.size()-1);
 		} catch (Exception e) {
 			handleCrashEvents(e);
 		}
-		Display.main(args);
+		Logger.printLog("All initial data gathering has been executed, starting display...");
+		Logger.printLog("Remember: file name is: " + Resources.filepath);
+		Display.lblSuperCharge.setEnabled(false);
+		Display.lblSuperCharge.setVisible(false);
+		Display.main();
 	}
 
-	public void draw() {
-		clear(); // clear the window of anything
-		background(80,80,80); // set the background color
-		textSize(16);
-		text("Do not close this window.",5,15);
-		text("It will close the program.",5,35);
-		fill(0,0,0);
-		fileLines = loadStrings(filepath);
-	    println("What is on the last line?");
-	    try {
-	    for(int i = 0; i < fileLines.length; i++) {
-	    	inputLine = fileLines[i];
-	    	
-	    }
-	    } catch(Exception e) {
-	    	handleCrashEvents(e);
-	    }
-		if(inputLine.equals(previousLine)) { // if we read a dupe
-		      println("Yo daug we read a dupe line!");
-	    } else {
-	      println("This line is different!");
-	      EventParser.inputData(inputLine);
-	      String bodyInfo[] = EventParser.gatherInfo(EventParser.determineEvent());
-	      for(int i = 0; i < bodyInfo.length; i++) {
-	    	  println("["+i+"]   " + bodyInfo[i]);
-	      }
-	      GUIDraw.inputData(bodyInfo);
-	      GUIDraw.updateScreen();
-	      println("We are done parsing info.");
-	      previousLine = inputLine;
-	    }
-		textFont(secondaryFont);
-		
-		
+	public static void draw() {
+		try {
+			if(BigBrother.watch() == true) {
+				try {
+					if(Resources.lines.size() > 300) {
+						Logger.printLog("The lines List has gotten pretty big, cleaning it out before parsing to help a little with RAM.");
+						Resources.lines.clear();
+					}
+					Resources.lines = Files.readAllLines(Paths.get(Resources.filepath), Charset.forName("ISO-8859-1"));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				for(int i = 0; i < Resources.lines.size(); i++) {
+			    	Resources.inputLine = Resources.lines.get(i);	    	
+			    }
+				if(Resources.inputLine.equals(Resources.previousLine)) { // if we read a dupe
+			    } else {
+			      Logger.printLog("This new line is different!");
+			      EventParser.inputData(Resources.inputLine);
+			      String bodyInfo[] = EventParser.gatherInfo(EventParser.determineEvent());
+			      Logger.printLog("We have gathered info on the event.");
+			      for(int i = 0; i < bodyInfo.length; i++) {
+			    	  Logger.printLog("["+i+"]   " + bodyInfo[i]);
+			      }
+			      GUIDraw.inputData(bodyInfo);
+			      Logger.printLog("We have inputted data to the GUI.");
+			      GUIDraw.updateScreen();
+			      Logger.printLog("We have updated the screen variabled used by GUIDraw");
+			      Logger.printLog("We are done parsing info.");
+			      Resources.previousLine = Resources.inputLine;
+			    }				
+			}
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 	} // end of draw function
 	
 	/**
@@ -132,24 +146,26 @@ public class Scanner extends PApplet{
 	 * 
 	 * from https://processing.org/examples/directorylist.html
 	 */
-	public void getLogFile(String path) {
-
-		   println("Listing all filenames in a directory: ");
+	public static void getLogFile(String path) {
+		   Logger.printLog("getLogFile has been called to determine the log file to load (last in the directory really...)");
+		   Logger.printLog("Listing all filenames in a directory: ");
 		   String[] filenames = listFileNames(path);
-		   printArray(filenames);
-
-		   println("\nListing info about all files in a directory: ");
-		   File[] files = listFiles(path);
+		   for(int i = 0; i < filenames.length; i++) {
+			   System.out.println(filenames[i]);
+		   }
+		   Logger.printLog("Listing info about all files in a directory: ");
+		   File pathway = new File(path);
+		   File[] files = pathway.listFiles();
 		   for (int i = 0; i < files.length; i++) {
 		     File f = files[i];    
-		     println("Name: " + f.getName());
-		     println("Is directory: " + f.isDirectory());
-		     println("Size: " + f.length());
+		     Logger.printLog("Name: " + f.getName());
+		     Logger.printLog("Is directory: " + f.isDirectory());
+		     Logger.printLog("Size: " + f.length());
 		     String lastModified = new Date(f.lastModified()).toString();
-		     println("Last Modified: " + lastModified);
-		     println("-----------------------");
-		     filename = f.getName();
-		     filepath = f.getAbsolutePath();
+		     Logger.printLog("Last Modified: " + lastModified);
+		     Logger.printLog("-----------------------");
+		     Resources.filename = f.getName();
+		     Resources.filepath = f.getAbsolutePath();
 		   }
 		 }
 	
@@ -159,7 +175,7 @@ public class Scanner extends PApplet{
 	 * @return String Array of file information
 	 * @author Daniel Shiffman
 	 */
-	public String[] listFileNames(String dir) {
+	public static String[] listFileNames(String dir) {
 	   File file = new File(dir);
 	   if (file.isDirectory()) {
 	     String names[] = file.list();
@@ -170,18 +186,23 @@ public class Scanner extends PApplet{
 	   }
 	 }
 
-	public void handleCrashEvents(Exception e) {
+	public static void handleCrashEvents(Exception e) {
 
-		PrintWriter writer;
-		println("OHSNAP WE CRASHED!!!!");
-		println("WE BETTER TELL THE USER!");
+		PrintWriter writer = null;
+		Logger.printLog("OHSNAP WE CRASHED!!!!");
+		Logger.printLog("WE BETTER TELL THE USER!");
 		int chosen = JOptionPane.showConfirmDialog(null, "Elite: Dangerous Exploration Data Profit Estimator has" + System.getProperty("line.separator") + "crashed. Error: " + e.toString() + System.getProperty("line.separator") + "Would you like to submit an error report?", "CRITICAL FATAL 2ERROR", JOptionPane.ERROR_MESSAGE);
 		if(chosen == 0) {
-			println("Yay user hit yes! Lets make that error report");
-			writer = createWriter(System.getProperty("user.home") + File.separator + "Elite Exploration Estimator" + File.separator + "Handled Crashes"+month()+"-"+day()+"-"+year()+"_"+hour()+"-"+minute()+".log");
+			Logger.printLog("Yay user hit yes! Lets make that error report");
+			try {
+				writer = new PrintWriter(System.getProperty("user.home") + File.separator + "Elite Exploration Estimator" + File.separator + "CrashLogs" + File.separator + "Handled Crash"+Resources.sdf.format(Resources.cal.getTime())+".log");
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
+			}
 			writer.println("------------------------------------------------------------------------------------------------------------");
 			writer.println("{ERROR REPORT FOR ELITE: DANGEROUS EXPLORATION DATA PROFIT ESTIMATOR}");
-			writer.println("This error report was generated on: " + month()+"/"+day()+"/"+year()+"(MM/DD/YY)");
+			writer.println("This error report was generated in version " + Resources.versionInfo + " of the program.");
+			writer.println("This error report was generated on: " + Resources.sdf.format(Resources.cal.getTime())+"(YYYY/MM/DD_HHmmss)");
 			writer.println("This error report was generated due to the following error: " + e.toString());
 			writer.println("------------------------------------------------------------------------------------------------------------");
 			writer.println("Stack Trace:");
@@ -190,18 +211,18 @@ public class Scanner extends PApplet{
 			writer.println("------------------------------------------------------------------------------------------------------------");
 			writer.println("Current State of Variables:");
 			writer.println("------------------------------------------------------------------------------------------------------------");
-			writer.println("currentCredits     " + GUIDraw.currentCredits);
-			writer.println("currentFuel        " + GUIDraw.currentFuel);
-			writer.println("currentLine        " + currentLine);
-			writer.println("currentSystem      " + GUIDraw.currentSystem);
-			writer.println("explorationCredits " + GUIDraw.explorationCredits);
-			writer.println("filename           " + filename);
-			writer.println("filepath           " + filepath);
-			writer.println("fuelCap            " + GUIDraw.fuelCap);
-			writer.println("inputLine          " + inputLine);
-			writer.println("lineCount          " + lineCount);
-			writer.println("previousLine       " + previousLine);
-			writer.println("systemCredits      " + GUIDraw.systemCredits);
+			writer.println("currentCredits     " + Resources.currentCredits);
+			writer.println("currentFuel        " + Resources.currentFuel);
+			writer.println("currentLine        " + Resources.currentLine);
+			writer.println("currentSystem      " + Resources.currentSystem);
+			writer.println("explorationCredits " + Resources.explorationCredits);
+			writer.println("filename           " + Resources.filename);
+			writer.println("filepath           " + Resources.filepath);
+			writer.println("fuelCap            " + Resources.fuelCap);
+			writer.println("inputLine          " + Resources.inputLine);
+			writer.println("lineCount          " + Resources.lineCount);
+			writer.println("previousLine       " + Resources.previousLine);
+			writer.println("systemCredits      " + Resources.systemCredits);
 			writer.println("------------------------------------------------------------------------------------------------------------");
 			writer.println("Error log completed.");
 			writer.flush();
@@ -210,7 +231,7 @@ public class Scanner extends PApplet{
 			System.exit(2);
 			
 		} else {
-			println("User did not hit YES, closing program instead of handling error.");
+			Logger.printLog("User did not hit YES, closing program instead of handling error.");
 			System.exit(1);
 		}
 	}
