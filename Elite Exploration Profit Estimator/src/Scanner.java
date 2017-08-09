@@ -56,7 +56,7 @@ public class Scanner {
 		Logger.printLog("TekCastPork's Elite: Dangerous Exploration Data Profit Estimator");
 		Logger.printLog("This log file was generated from program version " + Resources.versionInfo);
 		Logger.printLog("----------------------------------------------------------");
-		JOptionPane.showMessageDialog(null, "This program is still in SUPER ALPHA! Expect bugs and crashes.", "Welcome!", JOptionPane.INFORMATION_MESSAGE);
+		JOptionPane.showMessageDialog(null, "This program is still in ALPHA! Expect the occasional bug and/or crash.", "Welcome!", JOptionPane.INFORMATION_MESSAGE);
 		JOptionPane.showMessageDialog(null, "Please start your instance of Elite: Dangerous first, then click ok on this popup." + System.getProperty("line.separator") + "This makes sure that the correct journal file is read.", "Welcome!", JOptionPane.INFORMATION_MESSAGE);
 		try {
 			Loader.loadConfig();
