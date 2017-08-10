@@ -2,6 +2,8 @@
 
 Please at least read the how to install and run sections, as that process isnt drag and drop yet. It will be eventually, but not yet.
 
+Do know, this program can't determine your profits mid way through a journey, it can only determine your profits from the point you start the program.
+
 ## What is this?
 
 This is a program I am working on that attempts to help Elite: Dangerous pilots determine their profits from exploration data.
@@ -36,4 +38,9 @@ Incase you do spam click through I will also include instructions here.
 
 This 3 step process makes sure that the correct journal file is loaded as the game makes a new one each time it is started.
 
+<<<<<<< HEAD
 NOTE: If your journal file (the verbose log file I read) somehow gets to over 500,000 lines, which would be a nice feat and I congratulate that pilot, this program will require restarting as it does not yet automatically move to the next journal file. It's in ALPHA for a reason.
+=======
+NOTE: If your journal file (the verbose log file I read) somehow gets to over 500,000 lines, which would be a nice feat and I congratulate that pilot, this program will require restarting as it does not
+yet automatically move to the next journal file. It's in ALPHA for a reason.
+>>>>>>> origin/Alpha
