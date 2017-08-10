@@ -25,6 +25,7 @@ public class Display {
 	public static JProgressBar fuelLevelBar = new JProgressBar();;
 	public static JLabel fuelLabel = new JLabel("Fuel");
 	public static JLabel lblSuperCharge = new JLabel("Your Frame Shift Drive is supercharged.");
+	public static JLabel lblFuelLevelsCritical;
 
 	/**
 	 * Launch the application.
@@ -192,6 +193,12 @@ public class Display {
 		lblVersioninfo.setFont(new Font("Dialog", Font.BOLD | Font.ITALIC, 12));
 		lblVersioninfo.setBounds(438, 639, 104, 16);
 		lblVersioninfo.setText(Resources.versionInfo);
+		
+		lblFuelLevelsCritical = new JLabel("ALERT: FUEL LEVELS CRITICAL!!");
+		lblFuelLevelsCritical.setHorizontalAlignment(SwingConstants.CENTER);
+		lblFuelLevelsCritical.setFont(new Font("Dialog", Font.BOLD | Font.ITALIC, 30));
+		lblFuelLevelsCritical.setBounds(10, 238, 534, 67);
+		frmEliteDangerousExploration.getContentPane().add(lblFuelLevelsCritical);
 		
 		frmEliteDangerousExploration.getContentPane().add(lblVersioninfo);
 		frmEliteDangerousExploration.addWindowListener( new WindowAdapter()

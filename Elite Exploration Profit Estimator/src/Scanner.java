@@ -50,12 +50,37 @@ public class Scanner {
 			}
 		}
 	}
+	public static void initialChecks() {
+		if(Installer.doesExist(System.getProperty("user.home") + File.separator + "Elite Exploration Estimator") == true) { // If the data folder exists
+			System.out.println("The data folder does exist, there is no need to make it.");			
+		} else {
+			System.out.println("The data folder doesn't exist! We must make it before everything else crashes!");
+			System.out.println("Lets inform the user!");
+			JOptionPane.showMessageDialog(null, "This program has detected that this is the first time it has ever been ran." + System.getProperty("line.separator") + 
+												"Before we can continue we must make some required directories." + System.getProperty("line.separator") + 
+												"These directories will be places in your C:/Users/<Your_Username_here> folder.", "Initial Setup", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(null, "If these files get lost, moved, or deleted, all accumulated profit estimation data WILL be lost! Please don't delete these files!", "Initial Setup", JOptionPane.WARNING_MESSAGE);
+			try {
+				Installer.makeFolder(System.getProperty("user.home") + File.separator + "Elite Exploration Estimator");
+				Installer.makeFolder(System.getProperty("user.home") + File.separator + "Elite Exploration Estimator" + File.separator + "Config");
+				Installer.makeFile(System.getProperty("user.home") + File.separator + "Elite Exploration Estimator" + File.separator + "Config" + File.separator + "Configuration.cfg", "{  \"lastLocation\": No Location Specified,\"currentCredits\": 0,\"systemCredits\": 0,\"explorationCredits\": 0,\"totalCredits\": 0,\"fuelLevel\": 0}");
+				Installer.makeFolder(System.getProperty("user.home") + File.separator + "Elite Exploration Estimator" + File.separator + "CrashLogs");
+				Installer.makeFolder(System.getProperty("user.home") + File.separator + "Elite Exploration Estimator" + File.separator + "Logs");				
+			} catch (IOException e) {
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(null, "Something failed during the creation of the required files!" + File.separator + 
+													"Exception: " + e.getStackTrace().toString(), "ERROR", JOptionPane.WARNING_MESSAGE);
+			}
+			JOptionPane.showMessageDialog(null, "All of the required file have been created!", "Initial Setup", JOptionPane.INFORMATION_MESSAGE);
+		}
+	}
 
 	public static void setup() {
-		Logger.init();
+		initialChecks();
+		Logger.init(); // start the logger so it will actually log stuff
 		Logger.printLog("TekCastPork's Elite: Dangerous Exploration Data Profit Estimator");
 		Logger.printLog("This log file was generated from program version " + Resources.versionInfo);
-		Logger.printLog("----------------------------------------------------------");
+		Logger.printLog("----------------------------------------------------------"); // write some header text to the top of the log
 		JOptionPane.showMessageDialog(null, "This program is still in ALPHA! Expect the occasional bug and/or crash.", "Welcome!", JOptionPane.INFORMATION_MESSAGE);
 		JOptionPane.showMessageDialog(null, "Please start your instance of Elite: Dangerous first, then click ok on this popup." + System.getProperty("line.separator") + "This makes sure that the correct journal file is read.", "Welcome!", JOptionPane.INFORMATION_MESSAGE);
 		try {
@@ -63,6 +88,7 @@ public class Scanner {
 		} catch (IOException e2) {
 			e2.printStackTrace();
 		}
+		// Run a custom function that can grab the log file for me.
 		getLogFile(System.getProperty("user.home") + File.separator + "Saved Games" + File.separator + "Frontier Developments" + File.separator + "Elite Dangerous");
 		Logger.printLog("Grabbed file name is: " + Resources.filename);
 		try {
@@ -102,7 +128,7 @@ public class Scanner {
 
 	public static void draw() {
 		try {
-			if(BigBrother.watch() == true) {
+			if(BigBrother.watch() == true) { // If BigBrother saw you write in that private diary :P
 				try {
 					if(Resources.lines.size() > 300) {
 						Logger.printLog("The lines List has gotten pretty big, cleaning it out before parsing to help a little with RAM.");

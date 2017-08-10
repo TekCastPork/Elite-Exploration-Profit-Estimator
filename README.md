@@ -16,16 +16,24 @@ So I spent some time and coded a program that can do this for me, and I'm giving
 
 # HOW TO INSTALL
 
-1. This program currently only works on Windows based systems. I'm hoping to make it available for OSX, but as I do not have a Mac it's a little hard to code for one.
-2. Download the latest version from this github repo. It will arrive in a .zip format
-3. Navigate to your user folder (usually C:\Users\<your_username_here>) and extract the folder contained in the .zip
-4. For convienence you can place a shortcut to the jar file on your desktop to make starting the program easier.
+This program currently only works on Windows based systems. I'm hoping to make it available for OSX, but as I do not have a Mac it's a little hard to code for one.
+1.Download the latest version from this github repo. It will arrive in a .zip format
+
+2. Now changed from the previous version, you do not need to place the folder within the zip in a specific spot! The program will now auto-create
+the files that it needs.
 
 # HOW TO RUN
 
-1. Start the program. DO NOT SPAM CLICK THROUGH THE MESSAGE WINDOWS, THEY TELL YOU WHAT TO DO AT THIS TIME!
-2. In case you DID spam click through the message windows, next start your instance of Elite: Dangerous and load into your preferred area (open, private group, or solo)
-3. Now you can click past the second message window and the program should begin running normally.
+Start the program. DO NOT SPAM CLICK THROUGH THE MESSAGE WINDOWS, THEY TELL YOU WHAT TO DO AT THIS TIME!
+THE PROGRAM WILL NOT FUNCTION PROPERLY IF YOU SPAM CLICK THROUGH THE MESSAGE WINDOWS.
 
-NOTE: If your journal file (the verbose log file I read) somehow gets to over 500,000 lines, which would be a nice feat and I congratulate that pilot, this program will require restarting as it does not
-yet automatically move to the next journal file. It's in ALPHA for a reason.
+Incase you do spam click through I will also include instructions here.
+1.Start the .jar file.
+	The programs will check to see if the files that it uses for data saving exist, if they don't exist it will let you know and make them.
+2. Start your copy of Elite: Dangerous
+	Load into the game until you are in your ship idling.
+3. At this point you can finish clicking through the message windows.
+
+This 3 step process makes sure that the correct journal file is loaded as the game makes a new one each time it is started.
+
+NOTE: If your journal file (the verbose log file I read) somehow gets to over 500,000 lines, which would be a nice feat and I congratulate that pilot, this program will require restarting as it does not yet automatically move to the next journal file. It's in ALPHA for a reason.
