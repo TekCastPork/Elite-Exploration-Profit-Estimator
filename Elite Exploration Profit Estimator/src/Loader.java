@@ -17,6 +17,7 @@ public class Loader {
 		Resources.systemCredits = loader.getInt("systemCredits");
 		Resources.explorationCredits = loader.getInt("explorationCredits");
 		Resources.currentFuel = loader.getDouble("fuelLevel");
+	//	Display.chckbxEnableSounds.setSelected(loader.getBoolean("sounds"));
 		Logger.printLog("Configuration file loaded.");
 	}
 

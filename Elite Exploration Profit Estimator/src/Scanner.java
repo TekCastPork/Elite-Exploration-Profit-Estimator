@@ -77,6 +77,7 @@ public class Scanner {
 
 	public static void setup() {
 		initialChecks();
+		Updater.checkUpdates();
 		Logger.init(); // start the logger so it will actually log stuff
 		Logger.printLog("TekCastPork's Elite: Dangerous Exploration Data Profit Estimator");
 		Logger.printLog("This log file was generated from program version " + Resources.versionInfo);

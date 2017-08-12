@@ -144,6 +144,8 @@ public class EventParser {
 			Logger.printLog("The game is loading.");
 			output[0] = "Load";
 			output[1] = Integer.toString(parser.getInt("Credits"));
+			output[2] = Double.toString(parser.getDouble("FuelLevel"));
+			output[3] = Double.toString(parser.getDouble("FuelCapacity"));
 			break;
 		case 8:
 			Logger.printLog("We bought something from the market");
@@ -351,7 +353,15 @@ public class EventParser {
 					Logger.printLog("We found the type in the superGiantStars area.");
 					outputValue = superGiantValues[i];					
 				}				
-			}			
+			}
+			for(int i = 0; i < Resources.bodyClasses.length; i++) {
+				if(classification.equals(Resources.bodyClasses[i])) {
+					Logger.printLog("We found the type in the bodyClasses area.");
+					Logger.printLog("This is a star so we are skipping terraform.");
+					Logger.printLog("The terraform state is: null");
+						outputValue = bodyValueNonTerraform[i];
+				}
+			}
 		} else { // end Star IF Statement beginning of body area since there are no other options
 			for(int i = 0; i < Resources.bodyClasses.length; i++) {
 				if(classification.equals(Resources.bodyClasses[i])) {

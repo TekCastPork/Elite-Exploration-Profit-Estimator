@@ -57,7 +57,7 @@ public class GUIDraw {
 	 * This function will look at the EventParser data and figure out what event happened and place data accordingly to the variables used to draw information on the screen
 	 */
 	public static void updateScreen() {
-		String soundLocations = System.getProperty("user.dir") + File.separator + "Sounds" + File.separator;
+//		String soundLocations = System.getProperty("user.dir") + File.separator + "Sounds" + File.separator;
 		Logger.printLog("We are now going to change variables for the screen based on the event.");
 		if(Resources.eventData[0].equals("null") || Resources.eventData[0].equals("") || Resources.eventData[0].equals(null)) {
 			Logger.printLog("EventData[0], which contains the event type information for the GUIDraw, was empty! Big NO NO! Not updating screen to prevent crash.");
@@ -74,23 +74,37 @@ public class GUIDraw {
 				Resources.currentSystem = Resources.eventData[1];
 				Resources.currentFuel = Double.parseDouble(Resources.eventData[2]);				
 				if(Resources.currentFuel <= 10 && Resources.currentFuel > 5) {
-					SoundAlerter.playSound(soundLocations + "lowFuel.wav");
-					Display.lblFuelLevelsCritical.setVisible(false);
+//					try {
+//						if(Display.chckbxEnableSounds.isSelected()) {
+//							SoundAlerter.playSound(soundLocations + "lowFuel.wav");
+//						}
+//					} catch (Exception e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
 					Display.fuelLevelBar.setForeground(Color.YELLOW);					
 				} else if(Resources.currentFuel <= 5 && Resources.currentFuel > 2) {
-					SoundAlerter.playSound(soundLocations + "extremeFuel.wav");
-					Display.lblFuelLevelsCritical.setVisible(false);
-					Display.lblFuelLevelsCritical.setText("ALERT: FUEL LEVELS LOW!!");
-					Display.lblFuelLevelsCritical.setVisible(true);
+//					try {
+//						if(Display.chckbxEnableSounds.isSelected()) {
+//							SoundAlerter.playSound(soundLocations + "extremeFuel.wav");
+//						}
+//					} catch (Exception e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
 					Display.fuelLevelBar.setForeground(Color.RED);					
 				} else if (Resources.currentFuel <= 2) {
-					SoundAlerter.playSound(soundLocations + "criticalFuel.wav");
-					Display.fuelLevelBar.setForeground(Color.DARK_GRAY);
-					Display.lblFuelLevelsCritical.setText("ALERT: FUEL LEVELS CRITICAL!!");
-					Display.lblFuelLevelsCritical.setVisible(true);					
+//					try {
+//						if(Display.chckbxEnableSounds.isSelected()) {
+//							SoundAlerter.playSound(soundLocations + "criticalFuel.wav");
+//						}
+//					} catch (Exception e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+					Display.fuelLevelBar.setForeground(Color.DARK_GRAY);			
 				} else {				
 					Display.fuelLevelBar.setForeground(Color.GREEN);
-					Display.lblFuelLevelsCritical.setVisible(false);
 				}
 				Display.lblSuperCharge.setEnabled(false);
 				Display.lblSuperCharge.setVisible(false);
@@ -105,11 +119,14 @@ public class GUIDraw {
 				Display.lblSuperCharge.setVisible(true);
 				Resources.hasBoosted = true;	
 				Display.fuelLevelBar.setForeground(Color.CYAN);
-				SoundAlerter.playSound(soundLocations + "boostFuel.wav");
 				break;
 			case "Load":
 				Logger.printLog("Load event.");
 				Resources.currentCredits = Integer.parseInt(Resources.eventData[1]);
+				Resources.currentFuel = Double.parseDouble(Resources.eventData[2]);
+				Resources.fuelCap = Double.parseDouble(Resources.eventData[3]);
+				Logger.printLog("Now testing fuel levels for initial label visibility...");
+				Display.fuelLabel.setText((int)Resources.currentFuel+"/"+(int)Resources.fuelCap);
 				break;
 			case "CashGain":
 				Logger.printLog("CashGain event.");
