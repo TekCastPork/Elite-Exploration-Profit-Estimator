@@ -79,8 +79,8 @@ public class Scanner {
 		initialChecks();
 		Updater.checkUpdates();
 		Logger.init(); // start the logger so it will actually log stuff
-		Logger.printLog("TekCastPork's Elite: Dangerous Exploration Data Profit Estimator");
-		Logger.printLog("This log file was generated from program version " + Resources.versionInfo);
+		Logger.printLog("[Scanner]{setup} TekCastPork's Elite: Dangerous Exploration Data Profit Estimator");
+		Logger.printLog("[Scanner]{setup} This log file was generated from program version " + Resources.versionInfo);
 		Logger.printLog("----------------------------------------------------------"); // write some header text to the top of the log
 		JOptionPane.showMessageDialog(null, "This program is still in ALPHA! Expect the occasional bug and/or crash.", "Welcome!", JOptionPane.INFORMATION_MESSAGE);
 		JOptionPane.showMessageDialog(null, "Please start your instance of Elite: Dangerous first, then click ok on this popup." + System.getProperty("line.separator") + "This makes sure that the correct journal file is read.", "Welcome!", JOptionPane.INFORMATION_MESSAGE);
@@ -91,26 +91,26 @@ public class Scanner {
 		}
 		// Run a custom function that can grab the log file for me.
 		getLogFile(System.getProperty("user.home") + File.separator + "Saved Games" + File.separator + "Frontier Developments" + File.separator + "Elite Dangerous");
-		Logger.printLog("Grabbed file name is: " + Resources.filename);
+		Logger.printLog("[Scanner]{setup} Grabbed file name is: " + Resources.filename);
 		try {
 			Resources.lines = Files.readAllLines(Paths.get(Resources.filepath), Charset.forName("ISO-8859-1"));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
 		Resources.lineCount = Resources.lines.size();
-		Logger.printLog("Length is: " + Resources.lineCount);				
-		Logger.printLog("Because we are setting up lets quickly scan the lines for a LoadGame event to gather some initial data.");
-		Logger.printLog("We should also search for a location event to figure out where we are.");
+		Logger.printLog("[Scanner]{setup} Length is: " + Resources.lineCount);				
+		Logger.printLog("[Scanner]{setup} Because we are setting up lets quickly scan the lines for a LoadGame event to gather some initial data.");
+		Logger.printLog("[Scanner]{setup} We should also search for a location event to figure out where we are.");
 		for(int i = 0; i < Resources.lines.size(); i++) {
-	        Logger.printLog("["+i+"]   " + Resources.lines.get(i));
+	        Logger.printLog("[Scanner]{setup} ["+i+"]   " + Resources.lines.get(i));
 	        EventParser.inputData(Resources.lines.get(i));
 	        int eventNumber = EventParser.determineEvent();
 	        if(eventNumber == 7) {
-	        	Logger.printLog("We found the LoadGame event.");
+	        	Logger.printLog("[Scanner]{setup} We found the LoadGame event.");
 	        	GUIDraw.inputData(EventParser.gatherInfo(7));
 	        	GUIDraw.updateScreen();
 	        } else if(eventNumber == 30) {
-	        	Logger.printLog("We found the Location event.");
+	        	Logger.printLog("[Scanner]{setup} We found the Location event.");
 	        	GUIDraw.inputData(EventParser.gatherInfo(30));
 	        	GUIDraw.updateScreen();
 	        }
@@ -120,8 +120,8 @@ public class Scanner {
 		} catch (Exception e) {
 			handleCrashEvents(e);
 		}
-		Logger.printLog("All initial data gathering has been executed, starting display...");
-		Logger.printLog("Remember: file name is: " + Resources.filepath);
+		Logger.printLog("[Scanner]{setup} All initial data gathering has been executed, starting display...");
+		Logger.printLog("[Scanner]{setup} Remember: file name is: " + Resources.filepath);
 		Display.lblSuperCharge.setEnabled(false);
 		Display.lblSuperCharge.setVisible(false);
 		Display.main();
@@ -132,7 +132,7 @@ public class Scanner {
 			if(BigBrother.watch() == true) { // If BigBrother saw you write in that private diary :P
 				try {
 					if(Resources.lines.size() > 300) {
-						Logger.printLog("The lines List has gotten pretty big, cleaning it out before parsing to help a little with RAM.");
+						Logger.printLog("[Scanner]{draw} The lines List has gotten pretty big, cleaning it out before parsing to help a little with RAM.");
 						Resources.lines.clear();
 					}
 					Resources.lines = Files.readAllLines(Paths.get(Resources.filepath), Charset.forName("ISO-8859-1"));
@@ -144,18 +144,19 @@ public class Scanner {
 			    }
 				if(Resources.inputLine.equals(Resources.previousLine)) { // if we read a dupe
 			    } else {
-			      Logger.printLog("This new line is different!");
+			      Logger.printLog("[Scanner]{draw} JSON: " + Resources.inputLine);
+			      Logger.printLog("[Scanner]{draw} This new line is different!");
 			      EventParser.inputData(Resources.inputLine);
 			      String bodyInfo[] = EventParser.gatherInfo(EventParser.determineEvent());
-			      Logger.printLog("We have gathered info on the event.");
+			      Logger.printLog("[Scanner]{draw} We have gathered info on the event.");
 			      for(int i = 0; i < bodyInfo.length; i++) {
 			    	  Logger.printLog("["+i+"]   " + bodyInfo[i]);
 			      }
 			      GUIDraw.inputData(bodyInfo);
-			      Logger.printLog("We have inputted data to the GUI.");
+			      Logger.printLog("[Scanner]{draw} We have inputted data to the GUI.");
 			      GUIDraw.updateScreen();
-			      Logger.printLog("We have updated the screen variabled used by GUIDraw");
-			      Logger.printLog("We are done parsing info.");
+			      Logger.printLog("[Scanner]{draw} We have updated the screen variabled used by GUIDraw");
+			      Logger.printLog("[Scanner]{draw} We are done parsing info.");
 			      Resources.previousLine = Resources.inputLine;
 			    }				
 			}
@@ -174,22 +175,22 @@ public class Scanner {
 	 * from https://processing.org/examples/directorylist.html
 	 */
 	public static void getLogFile(String path) {
-		   Logger.printLog("getLogFile has been called to determine the log file to load (last in the directory really...)");
-		   Logger.printLog("Listing all filenames in a directory: ");
+		   Logger.printLog("[Scanner]{getLogFile} getLogFile has been called to determine the log file to load (last in the directory really...)");
+		   Logger.printLog("[Scanner]{getLogFile} Listing all filenames in a directory: ");
 		   String[] filenames = listFileNames(path);
 		   for(int i = 0; i < filenames.length; i++) {
 			   System.out.println(filenames[i]);
 		   }
-		   Logger.printLog("Listing info about all files in a directory: ");
+		   Logger.printLog("[Scanner]{getLogFile} Listing info about all files in a directory: ");
 		   File pathway = new File(path);
 		   File[] files = pathway.listFiles();
 		   for (int i = 0; i < files.length; i++) {
 		     File f = files[i];    
-		     Logger.printLog("Name: " + f.getName());
-		     Logger.printLog("Is directory: " + f.isDirectory());
-		     Logger.printLog("Size: " + f.length());
+		     Logger.printLog("[Scanner]{getLogFile} Name: " + f.getName());
+		     Logger.printLog("[Scanner]{getLogFile} Is directory: " + f.isDirectory());
+		     Logger.printLog("[Scanner]{getLogFile} Size: " + f.length());
 		     String lastModified = new Date(f.lastModified()).toString();
-		     Logger.printLog("Last Modified: " + lastModified);
+		     Logger.printLog("[Scanner]{getLogFile} Last Modified: " + lastModified);
 		     Logger.printLog("-----------------------");
 		     Resources.filename = f.getName();
 		     Resources.filepath = f.getAbsolutePath();

@@ -200,8 +200,8 @@ public class Display {
 		    {
 		        JFrame frame = (JFrame)e.getSource();
 		 
-	        	Logger.printLog("The exit button was pushed, since that is the only time I'm called, closing log file.");
-	        	Logger.printLog("Saving credit info and stuff so we can preload stuff next time.");
+	        	Logger.printLog("[Display]{windowClosing} The exit button was pushed, since that is the only time I'm called, closing log file.");
+	        	Logger.printLog("[Display]{windowClosing} Saving credit info and stuff so we can preload stuff next time.");
 	        	try {
 					Saver.saveData();
 				} catch (FileNotFoundException e2) {
@@ -212,12 +212,6 @@ public class Display {
 	    		Logger.logger.flush();
 	    		Logger.logger.close();
 	        	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//	        	try {
-//					PrintWriter saveFunction = new PrintWriter(System.getProperty("user.home") + File.separator + "Elite Exploration Estimator" + File.separator + "CrashLogs" + File.separator + "Unhandled Crash"+sdf.format(cal.getTime())+".log");
-//				} catch (FileNotFoundException e2) {
-//					e2.printStackTrace();
-//				}
-	        	
 	        	try {
 					Thread.sleep(500);
 				} catch (InterruptedException e1) {

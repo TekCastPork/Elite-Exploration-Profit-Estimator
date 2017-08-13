@@ -20,7 +20,7 @@ public class SoundAlerter {
      * @param filename the name of the file that is going to be played
      */
     public static void playSound(String filename) throws Exception{
-    	Logger.printLog("Trying to load: " + filename);
+    	Logger.printLog("[SoundAlerter]{playSound} Trying to load: " + filename);
 
         String strFilename = filename;
 

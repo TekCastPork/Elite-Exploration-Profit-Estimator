@@ -45,12 +45,12 @@ public class GUIDraw {
 	 * @param data
 	 */
 	public static void inputData(String[] data) {
-		Logger.printLog("We are inputting data for updating visual elements.");
+		Logger.printLog("[GUIDraw]{inputData} We are inputting data for updating visual elements.");
 		for(int i = 0; i < Resources.eventData.length; i++) {
 			Resources.eventData[i] = data[i];
 			Logger.printLog(Resources.eventData[i]);
 		}
-		Logger.printLog("Data Loaded.");
+		Logger.printLog("[GUIDraw]{inputData} Data Loaded.");
 		
 	}
 	/**
@@ -58,17 +58,17 @@ public class GUIDraw {
 	 */
 	public static void updateScreen() {
 //		String soundLocations = System.getProperty("user.dir") + File.separator + "Sounds" + File.separator;
-		Logger.printLog("We are now going to change variables for the screen based on the event.");
+		Logger.printLog("[GUIDraw]{updateScreen} We are now going to change variables for the screen based on the event.");
 		if(Resources.eventData[0].equals("null") || Resources.eventData[0].equals("") || Resources.eventData[0].equals(null)) {
-			Logger.printLog("EventData[0], which contains the event type information for the GUIDraw, was empty! Big NO NO! Not updating screen to prevent crash.");
+			Logger.printLog("[GUIDraw]{updateScreen} EventData[0], which contains the event type information for the GUIDraw, was empty! Big NO NO! Not updating screen to prevent crash.");
 		} else {
 			switch (Resources.eventData[0]) {
 			case "CashLoss":
-				Logger.printLog("CashLoss event.");
+				Logger.printLog("[GUIDraw]{updateScreen} CashLoss event.");
 				Resources.currentCredits -= Integer.parseInt(Resources.eventData[1]);
 				break;
 			case "Jump":
-				Logger.printLog("Jump event.");
+				Logger.printLog("[GUIDraw]{updateScreen} Jump event.");
 				Resources.explorationCredits += Resources.systemCredits;
 				Resources.systemCredits = 0;
 				Resources.currentSystem = Resources.eventData[1];
@@ -114,14 +114,14 @@ public class GUIDraw {
 				}
 				break;
 			case "Boost":
-				Logger.printLog("Boost event.");
+				Logger.printLog("[GUIDraw]{updateScreen} Boost event.");
 				Display.lblSuperCharge.setEnabled(true);
 				Display.lblSuperCharge.setVisible(true);
 				Resources.hasBoosted = true;	
 				Display.fuelLevelBar.setForeground(Color.CYAN);
 				break;
 			case "Load":
-				Logger.printLog("Load event.");
+				Logger.printLog("[GUIDraw]{updateScreen} Load event.");
 				Resources.currentCredits = Integer.parseInt(Resources.eventData[1]);
 				Resources.currentFuel = Double.parseDouble(Resources.eventData[2]);
 				Resources.fuelCap = Double.parseDouble(Resources.eventData[3]);
@@ -129,16 +129,16 @@ public class GUIDraw {
 				Display.fuelLabel.setText((int)Resources.currentFuel+"/"+(int)Resources.fuelCap);
 				break;
 			case "CashGain":
-				Logger.printLog("CashGain event.");
+				Logger.printLog("[GUIDraw]{updateScreen} CashGain event.");
 				Resources.currentCredits += Integer.parseInt(Resources.eventData[1]);
 				break;
 			case "Fuel":
-				Logger.printLog("Refuel event.");
+				Logger.printLog("[GUIDraw]{updateScreen} Refuel event.");
 				Resources.currentFuel += Double.parseDouble(Resources.eventData[1]);
 				Resources.currentCredits -= Integer.parseInt(Resources.eventData[2]);
 				break;
 			case "Scan":
-				Logger.printLog("Scan event! We care about this one alot!");
+				Logger.printLog("[GUIDraw]{updateScreen} Scan event! We care about this one alot!");
 				Resources.scannedBodyDetails[0] = Resources.eventData[5]; // Name
 				Resources.scannedBodyDetails[1] = Resources.eventData[1]; // Class
 				Resources.scannedBodyDetails[2] = Resources.eventData[2]; // Type
@@ -147,17 +147,18 @@ public class GUIDraw {
 				Resources.systemCredits += Integer.parseInt(Resources.eventData[4]);
 				break;
 			case "FuelScoop":
-				Logger.printLog("FuelScoop event.");
+				Logger.printLog("[GUIDraw]{updateScreen} FuelScoop event.");
 				Resources.currentFuel = Double.parseDouble(Resources.eventData[1]);
 				break;
 			case "Location":
-				Logger.printLog("Location event.");
+				Logger.printLog("[GUIDraw]{updateScreen} Location event.");
 				Resources.currentSystem = Resources.eventData[1];
 				break;
 			default:
-				Logger.printLog("Could not determine event type, not updating screen data");
+				Logger.printLog("[GUIDraw]{updateScreen} Could not determine event type, not updating screen data");
 				break;
 			}
+			Logger.printLog("[GUIDraw]{updateScreen} Now updating display labels.");
 			Display.lblCurrentSystem.setText("Current System: " + Resources.currentSystem);
 			Display.lblCurrentCredits.setText("Current Credits: " + Resources.currentCredits + "cr");
 			Display.lblSystemCredits.setText("System Credits: " + Resources.systemCredits + "cr");

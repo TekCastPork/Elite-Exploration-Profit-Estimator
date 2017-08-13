@@ -4,6 +4,8 @@ Please at least read the how to install and run sections, as that process isnt d
 
 Do know, this program can't determine your profits mid way through a journey, it can only determine your profits from the point you start the program.
 
+Latest Version: V 0.0.10 Alpha
+
 ## What is this?
 
 This is a program I am working on that attempts to help Elite: Dangerous pilots determine their profits from exploration data.

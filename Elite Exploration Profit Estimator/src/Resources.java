@@ -4,7 +4,7 @@ import java.util.Calendar;
 import java.util.List;
 
 public class Resources {
-	public static String versionInfo = "V0.0.9-Alpha"; // Update this with each new version
+	public static String versionInfo = "V0.0.10 Alpha"; // Update this with each new version
 	static String filename = "";
 	static String filepath = "";
 	static String inputLine = "";
@@ -17,8 +17,8 @@ public class Resources {
 	static SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
 	
 	static String bodyClasses[] = {"Metal rich body","High metal content body","Rocky body","Icy body","Rocky ice body","Earthlike body","Water world","Ammonia world","Water giant","Water giant with life",
-			"Gas giant with water based life","Gas giant with ammonia based life","Sudarsky class i gas giant","Sudarsky class ii gas giant","Sudarsky class iii gas giant",
-			"Sudarsky class iv gas giant","Sudarsky class v gas giant","Helium rich gas giant","Helium gas giant"};
+			"Gas giant with water based life","Gas giant with ammonia based life","Sudarsky class I gas giant","Sudarsky class II gas giant","Sudarsky class III gas giant",
+			"Sudarsky class IV gas giant","Sudarsky class V gas giant","Helium rich gas giant","Helium gas giant"};
 	static String fuelStars[] = {"K","G","B","F","O","A","M"};
 	static String dwarfStars[] = {"L","T","Y"};
 	static String protoStars[] = {"AeBe","TTS"};
