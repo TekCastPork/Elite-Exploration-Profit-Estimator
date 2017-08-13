@@ -4,7 +4,7 @@ import java.util.Calendar;
 import java.util.List;
 
 public class Resources {
-	public static String versionInfo = "V0.0.10 Alpha"; // Update this with each new version
+	public static String versionInfo = "V0.0.10-Alpha"; // Update this with each new version
 	static String filename = "";
 	static String filepath = "";
 	static String inputLine = "";
